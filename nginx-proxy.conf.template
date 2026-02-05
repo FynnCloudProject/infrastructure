@@ -2,9 +2,6 @@ server {
     listen 443 ssl;
     server_name _;
 
-    # Paths to the files you just generated
-    ssl_certificate     /etc/nginx/certs/localhost.crt;
-    ssl_certificate_key /etc/nginx/certs/localhost.key;
     client_max_body_size ${MAX_BODY_SIZE}M;
 
     location /api {
