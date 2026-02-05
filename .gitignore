@@ -1,0 +1,24 @@
+# Environment
+.env
+.env.local
+
+# Docker volumes
+postgres_data/
+postgres_data_dev/
+backend_storage/
+
+# Backups
+backups/*.sql
+backups/*.sql.gz
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

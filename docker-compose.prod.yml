@@ -1,0 +1,111 @@
+services:
+  proxy:
+    image: nginx:latest
+    container_name: fynncloud-proxy
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./nginx-proxy.conf.template:/etc/nginx/templates/default.conf.template:ro
+    environment:
+      - MAX_BODY_SIZE=${MAX_BODY_SIZE}
+    networks:
+      - fynncloud-network
+    ports:
+      - "${PROXY_PORT}:80"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:80/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  db:
+    image: postgres:16-alpine
+    container_name: fynncloud-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fynncloud
+      POSTGRES_USER: fynncloud
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fynncloud-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fynncloud -d fynncloud"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: fynncloud-backend:latest
+    container_name: fynncloud-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://fynncloud:${DB_PASSWORD}@db:5432/fynncloud
+      STORAGE_PATH: /app/Storage/
+      S3_BUCKET: ${S3_BUCKET}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_ENDPOINT: ${AWS_ENDPOINT}
+      APP_NAME: ${APP_NAME}
+      PRIMARY_COLOR: ${PRIMARY_COLOR}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      FRONTEND_URL: ${FRONTEND_URL}
+      MAX_CHUNK_SIZE: ${MAX_CHUNK_SIZE}mb
+      MAX_BODY_SIZE: ${MAX_BODY_SIZE}mb
+    volumes:
+      - backend_storage:/app/Storage
+    networks:
+      - fynncloud-network
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    image: fynncloud-frontend:latest
+    container_name: fynncloud-frontend
+    restart: unless-stopped
+    networks:
+      - fynncloud-network
+    expose:
+      - "80"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:80",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  fynncloud-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  backend_storage:
