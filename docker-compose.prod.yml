@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
-      - frontend
+      - web
     volumes:
       - ./nginx-proxy.conf.template:/etc/nginx/templates/default.conf.template:ro
     environment:
@@ -47,7 +47,7 @@ services:
       retries: 5
 
   backend:
-    image: fynncloud-backend:latest
+    image: ghcr.io/thilojaeggi/fynncloud-backend:latest
     container_name: fynncloud-backend
     restart: unless-stopped
     depends_on:
@@ -80,9 +80,9 @@ services:
       timeout: 10s
       retries: 3
 
-  frontend:
-    image: fynncloud-frontend:latest
-    container_name: fynncloud-frontend
+  web:
+    image: ghcr.io/thilojaeggi/fynncloud-web:latest
+    container_name: fynncloud-web
     restart: unless-stopped
     networks:
       - fynncloud-network
