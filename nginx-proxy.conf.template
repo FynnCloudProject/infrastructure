@@ -1,5 +1,5 @@
 server {
-    listen 443 ssl;
+    listen 80;
     server_name _;
 
     client_max_body_size ${MAX_BODY_SIZE}M;
