@@ -135,19 +135,19 @@ backend:
   #     memory: 512Mi
 
   # -- Pod-level security context
-  podSecurityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
+  podSecurityContext: {}
+  #   runAsNonRoot: true
+  #   runAsUser: 1000
+  #   runAsGroup: 1000
+  #   fsGroup: 1000
 
   # -- Container-level security context
-  securityContext:
-    allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: false
-    capabilities:
-      drop:
-        - ALL
+  securityContext: {}
+  #   allowPrivilegeEscalation: false
+  #   readOnlyRootFilesystem: false
+  #   capabilities:
+  #     drop:
+  #       - ALL
 
   # -- Startup probe (allows slow starts without killing the pod)
   startupProbe:
