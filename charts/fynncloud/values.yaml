@@ -85,6 +85,11 @@ backend:
     pullPolicy: Always
   replicas: 3
 
+  # -- Override the container command (leave empty to use image entrypoint)
+  command: []
+  # -- Override the container args (leave empty to use image CMD)
+  args: []
+
   # -- Deployment strategy
   strategy:
     type: RollingUpdate
