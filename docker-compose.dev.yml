@@ -47,6 +47,20 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: fynncloud-redis-dev
+    restart: unless-stopped
+    networks:
+      - fynncloud-network
+    volumes:
+      - redis_data_dev:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     image: fynncloud-backend:latest
     container_name: fynncloud-backend-dev
@@ -55,8 +69,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql://fynncloud:${DB_PASSWORD}@db:5432/fynncloud
+      REDIS_URL: redis://redis:6379
       STORAGE_PATH: /app/Storage/
       APP_NAME: ${APP_NAME}
       PRIMARY_COLOR: ${PRIMARY_COLOR}
@@ -71,9 +88,9 @@ services:
     networks:
       - fynncloud-network
     ports:
-      - "8080:8080"
+      - "8080:80"
     expose:
-      - "8080"
+      - "80"
     command:
       [
         "serve",
@@ -82,7 +99,7 @@ services:
         "--hostname",
         "0.0.0.0",
         "--port",
-        "8080",
+        "80",
         "--log",
         "debug",
       ]
@@ -140,3 +157,4 @@ networks:
 volumes:
   postgres_data_dev:
   backend_storage_dev:
+  redis_data_dev:
