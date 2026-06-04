@@ -60,6 +60,20 @@ services:
       timeout: 5s
       retries: 5
 
+  embeddings:
+    image: ghcr.io/fynncloudproject/embeddings:latest
+    container_name: fynncloud-embeddings
+    restart: unless-stopped
+    networks:
+      - fynncloud-network
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   backend:
     image: ghcr.io/fynncloudproject/server:latest
     container_name: fynncloud-backend
@@ -69,9 +83,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      embeddings:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql://fynncloud:${DB_PASSWORD}@db:5432/fynncloud
       REDIS_URL: redis://redis:6379
+      EMBEDDING_URL: http://embeddings:8000
       AUTO_MIGRATE: ${AUTO_MIGRATE:-false}
       STORAGE_PATH: /app/Storage/
       APP_NAME: ${APP_NAME}
@@ -97,10 +114,15 @@ services:
     image: ghcr.io/fynncloudproject/web:latest
     container_name: fynncloud-web
     restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NITRO_HOST: "0.0.0.0"
+      NITRO_PORT: "3000"
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE}
     networks:
       - fynncloud-network
     expose:
-      - "80"
+      - "3000"
     healthcheck:
       test:
         [
@@ -109,7 +131,7 @@ services:
           "--quiet",
           "--tries=1",
           "--spider",
-          "http://localhost:80",
+          "http://localhost:3000",
         ]
       interval: 30s
       timeout: 10s
