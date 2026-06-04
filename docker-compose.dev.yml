@@ -61,6 +61,20 @@ services:
       timeout: 5s
       retries: 5
 
+  embeddings:
+    image: fynncloud-embeddings:latest
+    container_name: fynncloud-embeddings-dev
+    restart: unless-stopped
+    networks:
+      - fynncloud-network
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   backend:
     image: fynncloud-backend:latest
     container_name: fynncloud-backend-dev
@@ -71,9 +85,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      embeddings:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql://fynncloud:${DB_PASSWORD}@db:5432/fynncloud
       REDIS_URL: redis://redis:6379
+      EMBEDDING_URL: http://embeddings:8000
       AUTO_MIGRATE: ${AUTO_MIGRATE:-false}
       STORAGE_PATH: /app/Storage/
       APP_NAME: ${APP_NAME}
