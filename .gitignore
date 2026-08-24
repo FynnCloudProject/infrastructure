@@ -1,24 +1,46 @@
-# Environment
+# Environment & Secrets
 .env
 .env.local
-
-# Docker volumes
-postgres_data/
-postgres_data_dev/
-backend_storage/
+.env.*.local
 
 # Backups
 backups/*.sql
 backups/*.sql.gz
+backups/pull_*
+backups/latest
+!backups/.gitkeep
+
+# Persistent storage & volume mounts (when bind-mounted locally)
+postgres_data/
+postgres_data_dev/
+backend_storage/
+backend_storage_dev/
+redis_data/
+redis_data_dev/
+
+# Container archives & keys
+*.tar.gz
+*.tar
+*.crt
+*.key
+*.pem
 
 # Logs
 *.log
 
-# OS
+# OS artifacts
 .DS_Store
 Thumbs.db
 
-# IDE
+# IDE & Editor files
 .vscode/
 .idea/
 *.swp
+*.swo
+
+# Terraform (if generated externally)
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfvars
+!**/*.tfvars.example
