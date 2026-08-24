@@ -1,7 +1,7 @@
 services:
   proxy:
     image: nginx:latest
-    container_name: fynncloud-proxy-dev
+    container_name: fynncloud-proxy
     restart: unless-stopped
     depends_on:
       - server
@@ -30,14 +30,14 @@ services:
 
   db:
     image: pgvector/pgvector:pg16
-    container_name: fynncloud-db-dev
+    container_name: fynncloud-db
     restart: unless-stopped
     environment:
       POSTGRES_DB: fynncloud
       POSTGRES_USER: fynncloud
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - postgres_data_dev:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - fynncloud-network
     healthcheck:
@@ -48,12 +48,12 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: fynncloud-redis-dev
+    container_name: fynncloud-redis
     restart: unless-stopped
     networks:
       - fynncloud-network
     volumes:
-      - redis_data_dev:/data
+      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -62,7 +62,7 @@ services:
 
   server:
     image: ghcr.io/fynncloudproject/server:latest
-    container_name: fynncloud-server-dev
+    container_name: fynncloud-server
     restart: unless-stopped
     depends_on:
       db:
@@ -83,11 +83,10 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
       MAX_CHUNK_SIZE: ${MAX_CHUNK_SIZE:-100}mb
       MAX_BODY_SIZE: ${MAX_BODY_SIZE:-100}mb
-      LOG_LEVEL: ${LOG_LEVEL:-debug}
       RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-false}
       DOCUMENT_SERVER_URL: ${DOCUMENT_SERVER_URL:-}
       OFFICE_PROVIDER: ${OFFICE_PROVIDER:-eurooffice}
-      EUROOFFICE_JWT_SECRET: ${EUROOFFICE_JWT_SECRET:-dev_eurooffice_secret_32_chars_min}
+      EUROOFFICE_JWT_SECRET: ${EUROOFFICE_JWT_SECRET:-}
       WOPI_PUBLIC_URL: ${WOPI_PUBLIC_URL:-}
       # Optional S3 Storage
       S3_BUCKET: ${S3_BUCKET:-}
@@ -96,11 +95,9 @@ services:
       AWS_REGION: ${AWS_REGION:-}
       AWS_ENDPOINT: ${AWS_ENDPOINT:-}
     volumes:
-      - server_storage_dev:/app/Storage
+      - server_storage:/app/Storage
     networks:
       - fynncloud-network
-    ports:
-      - "${SERVER_PORT:-8080}:8080"
     expose:
       - "8080"
     healthcheck:
@@ -111,18 +108,16 @@ services:
 
   web:
     image: ghcr.io/fynncloudproject/web:latest
-    container_name: fynncloud-web-dev
+    container_name: fynncloud-web
     restart: unless-stopped
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       NITRO_HOST: "0.0.0.0"
       NITRO_PORT: "3000"
       NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-}
       NUXT_PUBLIC_MAINTENANCE_MODE: ${NUXT_PUBLIC_MAINTENANCE_MODE:-false}
     networks:
       - fynncloud-network
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"
     expose:
       - "3000"
     healthcheck:
@@ -139,31 +134,15 @@ services:
       timeout: 10s
       retries: 3
 
-  adminer:
-    image: adminer:latest
-    container_name: fynncloud-adminer
-    restart: unless-stopped
-    depends_on:
-      - db
-    networks:
-      - fynncloud-network
-    ports:
-      - "8081:8080"
-    environment:
-      ADMINER_DEFAULT_SERVER: db
-      ADMINER_DEFAULT_DB: fynncloud
-      ADMINER_DEFAULT_USER: fynncloud
-      ADMINER_DEFAULT_PASS: ${DB_PASSWORD}
-      ADMINER_DESIGN: "pepa-linha"
-
+  # Optional EuroOffice (OnlyOffice) document server for in-browser editing.
   eurooffice:
     image: ghcr.io/euro-office/documentserver:latest
-    container_name: fynncloud-eurooffice-dev
+    container_name: fynncloud-eurooffice
     restart: unless-stopped
     environment:
       WOPI_ENABLED: "true"
       JWT_ENABLED: "true"
-      JWT_SECRET: ${EUROOFFICE_JWT_SECRET:-dev_eurooffice_secret_32_chars_min}
+      JWT_SECRET: ${EUROOFFICE_JWT_SECRET:-}
       EXAMPLE_ENABLED: "false"
       ADMINPANEL_ENABLED: "false"
     networks:
@@ -171,9 +150,9 @@ services:
     ports:
       - "${EUROOFFICE_PORT:-8082}:80"
     volumes:
-      - onlyoffice_data_dev:/var/www/onlyoffice/Data
-      - onlyoffice_log_dev:/var/log/onlyoffice
-      - onlyoffice_lib_dev:/var/lib/onlyoffice
+      - onlyoffice_data:/var/www/onlyoffice/Data
+      - onlyoffice_log:/var/log/onlyoffice
+      - onlyoffice_lib:/var/lib/onlyoffice
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/hosting/discovery"]
       interval: 30s
@@ -185,9 +164,9 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data_dev:
-  server_storage_dev:
-  redis_data_dev:
-  onlyoffice_data_dev:
-  onlyoffice_log_dev:
-  onlyoffice_lib_dev:
+  postgres_data:
+  server_storage:
+  redis_data:
+  onlyoffice_data:
+  onlyoffice_log:
+  onlyoffice_lib:
