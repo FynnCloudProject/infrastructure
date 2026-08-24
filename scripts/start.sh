@@ -1,79 +1,92 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 
 MODE="${1:-prod}"
-COMPOSE_FILE="docker-compose.${MODE}.yml"
+if [ "$MODE" = "dev" ] || [ "$MODE" = "development" ]; then
+    COMPOSE_FILE="docker-compose.dev.yml"
+    MODE="dev"
+else
+    COMPOSE_FILE="docker-compose.yml"
+    MODE="prod"
+fi
 
 # --- Helper Functions ---
-
 log() { echo -e "\033[1;34m[INFO]\033[0m $1"; }
 warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
+success() { echo -e "\033[1;32m[SUCCESS]\033[0m $1"; }
 error() { echo -e "\033[1;31m[ERROR]\033[0m $1"; exit 1; }
 
 # Ensure openssl is installed
 if ! command -v openssl &> /dev/null; then
-    error "openssl is required but not installed."
+    error "openssl is required for secret generation, but is not installed."
 fi
 
-# Function to safely inject/replace secrets
+# Function to safely generate and inject/replace secrets in .env
 set_secret() {
     local key=$1
     local env_file=".env"
     
-    # Check if key exists in file
     if ! grep -q "^$key=" "$env_file"; then
-        # Key missing entirely? Append it.
-        echo "$key=$(openssl rand -base64 32)" >> "$env_file"
-        log "Added missing secret: $key"
+        local new_val=$(openssl rand -base64 32 | tr -d '\n\r')
+        echo "$key=$new_val" >> "$env_file"
+        log "Generated secret for $key"
     else
-        # Key exists? Check if it's empty or contains "changeme"
-        local current_val=$(grep "^$key=" "$env_file" | cut -d '=' -f2-)
+        local current_val=$(grep "^$key=" "$env_file" | head -n 1 | cut -d '=' -f2-)
         if [[ -z "$current_val" ]] || [[ "$current_val" == "changeme"* ]]; then
-            local new_val=$(openssl rand -base64 32)
-            # Use a portable sed approach (works on Linux/GNU and macOS/BSD)
-            sed -i.bak "s|^$key=.*|$key=$new_val|" "$env_file" && rm "${env_file}.bak"
-            log "Updated default/empty secret: $key"
+            local new_val=$(openssl rand -base64 32 | tr -d '\n\r')
+            sed -i.bak "s|^$key=.*|$key=$new_val|" "$env_file" && rm -f "${env_file}.bak"
+            log "Generated secret for $key"
         fi
     fi
 }
 
 # --- Initialization ---
-
 if [ ! -f "$COMPOSE_FILE" ]; then
-    error "File not found: $COMPOSE_FILE\nUsage: $0 [prod|dev]"
+    error "Compose file not found: $COMPOSE_FILE"
 fi
 
 if [ ! -f .env ]; then
-    warn "No .env file found. Cloning from .env.example..."
+    warn "No .env file found. Copying default configuration from .env.example..."
     if [ -f .env.example ]; then
         cp .env.example .env
     else
         touch .env
-        warn "No .env.example found. Creating empty .env..."
     fi
 fi
 
-# --- Secret Injection ---
+# --- Secret Generation ---
 log "Validating security keys..."
 set_secret "DB_PASSWORD"
 set_secret "JWT_SECRET"
+set_secret "ENCRYPTION_KEY"
+set_secret "EUROOFFICE_JWT_SECRET"
 
-# --- Docker Operations ---
-log "Starting FynnCloud ($MODE mode)"
+# --- Start Docker Services ---
+log "Starting FynnCloud ($MODE mode)..."
 docker compose -f "$COMPOSE_FILE" up -d
 
-log "Waiting for services to stabilize..."
-sleep 10
+log "Waiting for services to become healthy..."
+sleep 5
 
 echo ""
 echo "📊 Service Status:"
 docker compose -f "$COMPOSE_FILE" ps
 
+# Read port configuration from .env if present
+PROXY_PORT=$(grep "^PROXY_PORT=" .env 2>/dev/null | cut -d'=' -f2 | tr -d ' ' || echo "80")
+[ -z "$PROXY_PORT" ] && PROXY_PORT="80"
+
 echo ""
-echo -e "\033[1;32m✅ FynnCloud is up!\033[0m"
+echo -e "\033[1;32m🚀 FynnCloud is up and running!\033[0m"
 if [ "$MODE" = "prod" ]; then
-    echo "   URL: http://localhost"
+    echo "   Web Application: http://localhost:${PROXY_PORT}"
 else
-    echo "   Backend:  http://localhost:$(grep BACKEND_PORT .env | cut -d'=' -f2 || echo 8080)"
-    echo "   Frontend: http://localhost:$(grep FRONTEND_PORT .env | cut -d'=' -f2 || echo 3000)"
+    SERVER_PORT=$(grep "^SERVER_PORT=" .env 2>/dev/null | cut -d'=' -f2 | tr -d ' ' || echo "8080")
+    WEB_PORT=$(grep "^FRONTEND_PORT=" .env 2>/dev/null | cut -d'=' -f2 | tr -d ' ' || echo "3000")
+    echo "   Proxy:   http://localhost:${PROXY_PORT}"
+    echo "   Web:     http://localhost:${WEB_PORT:-3000}"
+    echo "   Server:  http://localhost:${SERVER_PORT:-8080}"
+    echo "   Adminer: http://localhost:8081"
 fi
+echo ""
+echo "View container logs with: ./scripts/logs.sh"
