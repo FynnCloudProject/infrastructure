@@ -1,11 +1,12 @@
 apiVersion: v2
 name: fynncloud
-description: A Helm chart for deploying FynnCloud — self-hosted cloud storage
+description: A Helm chart for deploying FynnCloud - self-hosted cloud storage
 type: application
-version: 0.4.0
+version: 0.4.1
 appVersion: "1.0.0"
 kubeVersion: ">=1.27.0-0"
 home: https://fynncloud.ch
+icon: https://raw.githubusercontent.com/FynnCloudProject/FynnCloud-Web/main/public/favicon.ico
 sources:
   - https://github.com/FynnCloudProject
 keywords:

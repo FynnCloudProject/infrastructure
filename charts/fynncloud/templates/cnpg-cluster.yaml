@@ -27,7 +27,8 @@ spec:
   # Storage configuration
   storage:
     size: {{ .Values.cnpg.storage.size }}
-    {{- if .Values.cnpg.storage.storageClass }}
-    storageClass: {{ .Values.cnpg.storage.storageClass }}
+    {{- $storageClass := include "fynncloud.storageClass" (dict "root" . "componentStorageClass" .Values.cnpg.storage.storageClass) }}
+    {{- if $storageClass }}
+    storageClass: {{ $storageClass }}
     {{- end }}
 {{- end }}

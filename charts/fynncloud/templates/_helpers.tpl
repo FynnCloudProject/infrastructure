@@ -178,11 +178,30 @@ PostgreSQL SSL Mode
 {{- end }}
 
 {{/*
-Image pull secrets — merges global with any per-component secrets if needed
+Image pull secrets - merges global with any per-component secrets if needed
 */}}
 {{- define "fynncloud.imagePullSecrets" -}}
 {{- with .Values.global.imagePullSecrets }}
 imagePullSecrets:
   {{- toYaml . | nindent 2 }}
 {{- end }}
+{{- end }}
+
+{{/*
+Return the storageClass name prioritizing component override over global setting.
+Usage: {{ include "fynncloud.storageClass" (dict "root" $ "componentStorageClass" .Values.backend.storage.storageClass) }}
+*/}}
+{{- define "fynncloud.storageClass" -}}
+{{- if .componentStorageClass -}}
+{{- .componentStorageClass -}}
+{{- else if .root.Values.global.storageClass -}}
+{{- .root.Values.global.storageClass -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Busybox image for init containers
+*/}}
+{{- define "fynncloud.busyboxImage" -}}
+{{- default "busybox:1.36" .Values.global.busyboxImage -}}
 {{- end }}

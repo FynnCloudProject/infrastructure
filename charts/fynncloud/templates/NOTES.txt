@@ -15,7 +15,7 @@
 {{- end }}
 {{- else if .Values.httpRoute.enabled }}
 
-🌐 Gateway API (HTTPRoute only — using external Gateway)
+🌐 Gateway API (HTTPRoute only - using external Gateway)
    HTTPRoute: {{ include "fynncloud.httpRoute.name" . }}
    Get route status:
      kubectl get httproute {{ include "fynncloud.httpRoute.name" . }} -n {{ .Release.Namespace }}
@@ -62,3 +62,4 @@
 
 ⚠️  Remember to change default passwords before going to production:
     - backend.env.JWT_SECRET
+    - backend.env.ENCRYPTION_KEY

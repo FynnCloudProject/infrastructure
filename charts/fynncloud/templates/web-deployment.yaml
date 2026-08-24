@@ -49,10 +49,10 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
+          {{- with .Values.web.extraEnv }}
           env:
-            {{- with .Values.web.extraEnv }}
             {{- toYaml . | nindent 12 }}
-            {{- end }}
+          {{- end }}
           {{- with .Values.web.startupProbe }}
           startupProbe:
             {{- toYaml . | nindent 12 }}

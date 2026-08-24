@@ -12,7 +12,8 @@ spec:
   resources:
     requests:
       storage: {{ .Values.backend.storage.size | quote }}
-  {{- if .Values.backend.storage.storageClass }}
-  storageClassName: {{ .Values.backend.storage.storageClass | quote }}
+  {{- $storageClass := include "fynncloud.storageClass" (dict "root" . "componentStorageClass" .Values.backend.storage.storageClass) }}
+  {{- if $storageClass }}
+  storageClassName: {{ $storageClass | quote }}
   {{- end }}
 {{- end }}
