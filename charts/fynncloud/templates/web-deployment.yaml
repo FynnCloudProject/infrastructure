@@ -53,10 +53,18 @@ spec:
             - name: http
               containerPort: {{ .Values.web.port | default 3000 }}
               protocol: TCP
-          {{- with .Values.web.extraEnv }}
           env:
+            - name: NODE_ENV
+              value: "production"
+            - name: NITRO_HOST
+              value: "0.0.0.0"
+            - name: NITRO_PORT
+              value: "3000"
+            - name: NUXT_PUBLIC_API_BASE
+              value: {{ .Values.web.apiBase | default "" | quote }}
+            {{- with .Values.web.extraEnv }}
             {{- toYaml . | nindent 12 }}
-          {{- end }}
+            {{- end }}
           {{- with .Values.web.startupProbe }}
           startupProbe:
             {{- toYaml . | nindent 12 }}
