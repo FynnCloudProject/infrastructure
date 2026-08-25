@@ -412,7 +412,7 @@ httpRoute:
   #             set:
   #               - name: X-Forwarded-Proto
   #                 value: https
-  #       serverRefs:
+  #       backendRefs:
   #         - name: my-server
   #           port: 8080
   #           weight: 100
@@ -420,7 +420,7 @@ httpRoute:
   #         - path:
   #             type: PathPrefix
   #             value: /
-  #       serverRefs:
+  #       backendRefs:
   #         - name: my-web
   #           port: 80
   rules: []

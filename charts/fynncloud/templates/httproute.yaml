@@ -36,8 +36,8 @@ spec:
       filters:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serverRefs:
-        {{- toYaml .serverRefs | nindent 8 }}
+      backendRefs:
+        {{- toYaml .backendRefs | nindent 8 }}
     {{- end }}
     {{- else }}
     {{- /* ── Auto-generated rules from server/web services ── */}}
@@ -46,7 +46,7 @@ spec:
         - path:
             type: PathPrefix
             value: /api
-      serverRefs:
+      backendRefs:
         - name: {{ include "fynncloud.fullname" . }}-server
           port: {{ .Values.server.service.port }}
     {{- end }}
@@ -55,7 +55,7 @@ spec:
         - path:
             type: PathPrefix
             value: /
-      serverRefs:
+      backendRefs:
         - name: {{ include "fynncloud.fullname" . }}-web
           port: {{ .Values.web.service.port }}
     {{- end }}
