@@ -1,39 +1,39 @@
-{{- if .Values.backend.enabled }}
+{{- if .Values.server.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "fynncloud.fullname" . }}-backend
+  name: {{ include "fynncloud.fullname" . }}-server
   labels:
     {{- include "fynncloud.labels" . | nindent 4 }}
-    app.kubernetes.io/component: backend
+    app.kubernetes.io/component: server
 spec:
-  {{- if not .Values.autoscaling.backend.enabled }}
-  replicas: {{ .Values.backend.replicas }}
+  {{- if not .Values.autoscaling.server.enabled }}
+  replicas: {{ .Values.server.replicas }}
   {{- end }}
-  {{- with .Values.backend.strategy }}
+  {{- with .Values.server.strategy }}
   strategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   selector:
     matchLabels:
       {{- include "fynncloud.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: backend
+      app.kubernetes.io/component: server
   template:
     metadata:
-      {{- with .Values.backend.podAnnotations }}
+      {{- with .Values.server.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
         {{- include "fynncloud.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: backend
-        {{- with .Values.backend.podLabels }}
+        app.kubernetes.io/component: server
+        {{- with .Values.server.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
       serviceAccountName: {{ include "fynncloud.serviceAccountName" . }}
       {{- include "fynncloud.imagePullSecrets" . | nindent 6 }}
-      {{- with .Values.backend.podSecurityContext }}
+      {{- with .Values.server.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -64,18 +64,18 @@ spec:
               echo "Redis is ready"
         {{- end }}
       containers:
-        - name: backend
-          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
-          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
-          {{- with .Values.backend.securityContext }}
+        - name: server
+          image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
+          imagePullPolicy: {{ .Values.server.image.pullPolicy }}
+          {{- with .Values.server.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.backend.command }}
+          {{- with .Values.server.command }}
           command:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.backend.args }}
+          {{- with .Values.server.args }}
           args:
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -98,9 +98,9 @@ spec:
             - name: STORAGE_PATH
               value: "/app/Storage/"
             - name: APP_NAME
-              value: {{ .Values.backend.env.APP_NAME | quote }}
+              value: {{ .Values.server.env.APP_NAME | quote }}
             - name: PRIMARY_COLOR
-              value: {{ .Values.backend.env.PRIMARY_COLOR | quote }}
+              value: {{ .Values.server.env.PRIMARY_COLOR | quote }}
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -112,63 +112,63 @@ spec:
                   name: {{ include "fynncloud.jwt.secretName" . }}
                   key: encryption-key
             - name: CORS_ALLOWED_ORIGINS
-              value: {{ .Values.backend.env.CORS_ALLOWED_ORIGINS | quote }}
+              value: {{ .Values.server.env.CORS_ALLOWED_ORIGINS | quote }}
             - name: FRONTEND_URL
-              value: {{ .Values.backend.env.FRONTEND_URL | quote }}
+              value: {{ .Values.server.env.FRONTEND_URL | quote }}
             - name: MAX_CHUNK_SIZE
-              value: "{{ .Values.backend.env.MAX_CHUNK_SIZE }}mb"
+              value: "{{ .Values.server.env.MAX_CHUNK_SIZE }}mb"
             - name: MAX_BODY_SIZE
-              value: "{{ .Values.backend.env.MAX_BODY_SIZE }}mb"
-            {{- with .Values.backend.extraEnv }}
+              value: "{{ .Values.server.env.MAX_BODY_SIZE }}mb"
+            {{- with .Values.server.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-          {{- with .Values.backend.startupProbe }}
+          {{- with .Values.server.startupProbe }}
           startupProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.backend.livenessProbe }}
+          {{- with .Values.server.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.backend.readinessProbe }}
+          {{- with .Values.server.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.backend.resources }}
+          {{- with .Values.server.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
             - name: storage
               mountPath: /app/Storage
-            {{- with .Values.backend.extraVolumeMounts }}
+            {{- with .Values.server.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-      {{- with .Values.backend.nodeSelector }}
+      {{- with .Values.server.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.backend.affinity }}
+      {{- with .Values.server.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.backend.tolerations }}
+      {{- with .Values.server.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.backend.topologySpreadConstraints }}
+      {{- with .Values.server.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
         - name: storage
-          {{- if .Values.backend.storage.enabled }}
+          {{- if .Values.server.storage.enabled }}
           persistentVolumeClaim:
-            claimName: {{ include "fynncloud.fullname" . }}-backend-storage
+            claimName: {{ include "fynncloud.fullname" . }}-server-storage
           {{- else }}
           emptyDir: {}
           {{- end }}
-        {{- with .Values.backend.extraVolumes }}
+        {{- with .Values.server.extraVolumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
 {{- end }}

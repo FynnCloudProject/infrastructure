@@ -31,12 +31,12 @@ spec:
           {{- range .paths }}
           - path: {{ .path }}
             pathType: {{ .pathType }}
-            backend:
+            server:
               service:
-                {{- if eq .service "backend" }}
-                name: {{ include "fynncloud.fullname" $ }}-backend
+                {{- if eq .service "server" }}
+                name: {{ include "fynncloud.fullname" $ }}-server
                 port:
-                  number: {{ $.Values.backend.service.port }}
+                  number: {{ $.Values.server.service.port }}
                 {{- else }}
                 name: {{ include "fynncloud.fullname" $ }}-web
                 port:

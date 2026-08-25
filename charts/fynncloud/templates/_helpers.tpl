@@ -159,8 +159,8 @@ PostgreSQL Password Key
 JWT secret name
 */}}
 {{- define "fynncloud.jwt.secretName" -}}
-{{- if .Values.backend.existingSecret }}
-{{- .Values.backend.existingSecret }}
+{{- if .Values.server.existingSecret }}
+{{- .Values.server.existingSecret }}
 {{- else }}
 {{- printf "%s-secrets" (include "fynncloud.fullname" .) }}
 {{- end }}
@@ -189,7 +189,7 @@ imagePullSecrets:
 
 {{/*
 Return the storageClass name prioritizing component override over global setting.
-Usage: {{ include "fynncloud.storageClass" (dict "root" $ "componentStorageClass" .Values.backend.storage.storageClass) }}
+Usage: {{ include "fynncloud.storageClass" (dict "root" $ "componentStorageClass" .Values.server.storage.storageClass) }}
 */}}
 {{- define "fynncloud.storageClass" -}}
 {{- if .componentStorageClass -}}

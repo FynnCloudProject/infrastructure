@@ -9,7 +9,7 @@ Official Helm chart for deploying **FynnCloud** — high-performance, self-hoste
 
 ## 🚀 Features
 
-- **Decoupled Architecture**: High-availability Swift backend (`fynncloud-server`) and Nuxt 3 web frontend (`fynncloud-web`).
+- **Decoupled Architecture**: High-availability Swift server (`fynncloud-server`) and Nuxt 3 web frontend (`fynncloud-web`).
 - **Database Operations**: Integrated CloudNativePG operator support with automated failover or connection to external PostgreSQL instances.
 - **Modern Networking**: Gateway API (`Gateway` and `HTTPRoute`) support alongside legacy `Ingress` compatibility.
 - **GitOps Ready**: Built-in support for ArgoCD hooks and automated schema migrations.
@@ -41,8 +41,8 @@ cd charts/fynncloud
 helm install fynncloud . \
   --namespace fynncloud \
   --create-namespace \
-  --set backend.env.JWT_SECRET="super-secret-jwt-key-change-me" \
-  --set backend.env.ENCRYPTION_KEY="super-secret-encryption-key-change-me"
+  --set server.env.JWT_SECRET="super-secret-jwt-key-change-me" \
+  --set server.env.ENCRYPTION_KEY="super-secret-encryption-key-change-me"
 ```
 
 ---
@@ -106,7 +106,7 @@ ingress:
       paths:
         - path: /api
           pathType: Prefix
-          service: backend
+          service: server
         - path: /
           pathType: Prefix
           service: web
@@ -123,14 +123,14 @@ ingress:
 | `serviceAccount.create` | Create a ServiceAccount for pods | `true` |
 | `cnpg.enabled` | Deploy CloudNativePG PostgreSQL cluster | `true` |
 | `cnpg.instances` | Number of database replicas | `3` |
-| `backend.enabled` | Deploy backend server | `true` |
-| `backend.replicas` | Number of backend pod replicas | `3` |
-| `backend.image.repository` | Container image repository for backend | `ghcr.io/fynncloudproject/server` |
-| `backend.image.tag` | Container image tag for backend | `latest` |
-| `backend.storage.enabled` | Enable PVC for local binary/file storage | `true` |
-| `backend.storage.size` | Storage capacity for PVC | `"5Gi"` |
-| `backend.env.JWT_SECRET` | Secret key for JWT signing | `"changeme"` |
-| `backend.env.ENCRYPTION_KEY` | Key for encrypting 2FA secrets at rest. Required, permanent — changing it makes stored 2FA secrets undecryptable | `"changeme"` |
+| `server.enabled` | Deploy server server | `true` |
+| `server.replicas` | Number of server pod replicas | `3` |
+| `server.image.repository` | Container image repository for server | `ghcr.io/fynncloudproject/server` |
+| `server.image.tag` | Container image tag for server | `latest` |
+| `server.storage.enabled` | Enable PVC for local binary/file storage | `true` |
+| `server.storage.size` | Storage capacity for PVC | `"5Gi"` |
+| `server.env.JWT_SECRET` | Secret key for JWT signing | `"changeme"` |
+| `server.env.ENCRYPTION_KEY` | Key for encrypting 2FA secrets at rest. Required, permanent — changing it makes stored 2FA secrets undecryptable | `"changeme"` |
 | `web.enabled` | Deploy web frontend | `true` |
 | `web.replicas` | Number of web pod replicas | `1` |
 | `web.image.repository` | Container image repository for web | `ghcr.io/fynncloudproject/web` |
@@ -138,7 +138,7 @@ ingress:
 | `gateway.enabled` | Provision Gateway API Gateway resource | `false` |
 | `httpRoute.enabled` | Provision Gateway API HTTPRoute resource | `false` |
 | `ingress.enabled` | Provision Ingress resource | `false` |
-| `autoscaling.backend.enabled` | Enable Horizontal Pod Autoscaler for backend | `false` |
+| `autoscaling.server.enabled` | Enable Horizontal Pod Autoscaler for server | `false` |
 | `networkPolicy.enabled` | Provision isolation NetworkPolicies | `false` |
 
 ---

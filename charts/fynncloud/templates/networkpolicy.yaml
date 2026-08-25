@@ -3,22 +3,22 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ include "fynncloud.fullname" . }}-backend
+  name: {{ include "fynncloud.fullname" . }}-server
   labels:
     {{- include "fynncloud.labels" . | nindent 4 }}
-    app.kubernetes.io/component: backend
+    app.kubernetes.io/component: server
 spec:
   podSelector:
     matchLabels:
       {{- include "fynncloud.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: backend
+      app.kubernetes.io/component: server
   policyTypes:
     - Ingress
     - Egress
   ingress:
     # Allow traffic from web pods and gateway/ingress controllers
     - ports:
-        - port: {{ .Values.backend.service.port }}
+        - port: {{ .Values.server.service.port }}
           protocol: TCP
     {{- with .Values.networkPolicy.extraIngress }}
     {{- toYaml . | nindent 4 }}

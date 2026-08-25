@@ -56,7 +56,7 @@
         "existingSecret": { "type": "string" }
       }
     },
-    "backend": {
+    "server": {
       "type": "object",
       "properties": {
         "enabled": { "type": "boolean" },
@@ -148,7 +148,7 @@
     "autoscaling": {
       "type": "object",
       "properties": {
-        "backend": {
+        "server": {
           "type": "object",
           "properties": {
             "enabled": { "type": "boolean" },
@@ -169,7 +169,7 @@
     "podDisruptionBudget": {
       "type": "object",
       "properties": {
-        "backend": { "type": "object" },
+        "server": { "type": "object" },
         "web": { "type": "object" }
       }
     },

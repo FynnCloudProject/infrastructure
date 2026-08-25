@@ -1,13 +1,13 @@
-{{- if and .Values.backend.enabled .Values.backend.migrate.enabled }}
+{{- if and .Values.server.enabled .Values.server.migrate.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "fynncloud.fullname" . }}-backend-migrate
+  name: {{ include "fynncloud.fullname" . }}-server-migrate
   labels:
     {{- include "fynncloud.labels" . | nindent 4 }}
-    app.kubernetes.io/component: backend-migrate
+    app.kubernetes.io/component: server-migrate
   annotations:
-    {{- with .Values.backend.migrate.podAnnotations }}
+    {{- with .Values.server.migrate.podAnnotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
@@ -15,12 +15,12 @@ spec:
     metadata:
       labels:
         {{- include "fynncloud.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: backend-migrate
+        app.kubernetes.io/component: server-migrate
     spec:
       restartPolicy: OnFailure
       serviceAccountName: {{ include "fynncloud.serviceAccountName" . }}
       {{- include "fynncloud.imagePullSecrets" . | nindent 6 }}
-      {{- with .Values.backend.podSecurityContext }}
+      {{- with .Values.server.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -38,14 +38,14 @@ spec:
               echo "PostgreSQL is ready"
       containers:
         - name: migrate
-          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
-          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
-          {{- with .Values.backend.securityContext }}
+          image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
+          imagePullPolicy: {{ .Values.server.image.pullPolicy }}
+          {{- with .Values.server.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           command:
-            {{- toYaml .Values.backend.migrate.command | nindent 12 }}
+            {{- toYaml .Values.server.migrate.command | nindent 12 }}
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
@@ -57,9 +57,9 @@ spec:
             - name: STORAGE_PATH
               value: "/app/Storage/"
             - name: APP_NAME
-              value: {{ .Values.backend.env.APP_NAME | quote }}
+              value: {{ .Values.server.env.APP_NAME | quote }}
             - name: PRIMARY_COLOR
-              value: {{ .Values.backend.env.PRIMARY_COLOR | quote }}
+              value: {{ .Values.server.env.PRIMARY_COLOR | quote }}
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -71,38 +71,38 @@ spec:
                   name: {{ include "fynncloud.jwt.secretName" . }}
                   key: encryption-key
             - name: CORS_ALLOWED_ORIGINS
-              value: {{ .Values.backend.env.CORS_ALLOWED_ORIGINS | quote }}
+              value: {{ .Values.server.env.CORS_ALLOWED_ORIGINS | quote }}
             - name: FRONTEND_URL
-              value: {{ .Values.backend.env.FRONTEND_URL | quote }}
+              value: {{ .Values.server.env.FRONTEND_URL | quote }}
             - name: MAX_CHUNK_SIZE
-              value: "{{ .Values.backend.env.MAX_CHUNK_SIZE }}mb"
+              value: "{{ .Values.server.env.MAX_CHUNK_SIZE }}mb"
             - name: MAX_BODY_SIZE
-              value: "{{ .Values.backend.env.MAX_BODY_SIZE }}mb"
-            {{- with .Values.backend.extraEnv }}
+              value: "{{ .Values.server.env.MAX_BODY_SIZE }}mb"
+            {{- with .Values.server.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           volumeMounts:
             - name: storage
               mountPath: /app/Storage
-            {{- with .Values.backend.extraVolumeMounts }}
+            {{- with .Values.server.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-      {{- with .Values.backend.nodeSelector }}
+      {{- with .Values.server.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.backend.affinity }}
+      {{- with .Values.server.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.backend.tolerations }}
+      {{- with .Values.server.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
         - name: storage
           emptyDir: {}
-        {{- with .Values.backend.extraVolumes }}
+        {{- with .Values.server.extraVolumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
 {{- end }}

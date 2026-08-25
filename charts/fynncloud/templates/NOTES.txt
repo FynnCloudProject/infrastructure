@@ -39,7 +39,7 @@
     - ingress.enabled (legacy)
 
    Or port-forward the services:
-     Backend: kubectl port-forward svc/{{ include "fynncloud.fullname" . }}-backend {{ .Values.backend.service.port }}:{{ .Values.backend.service.port }} -n {{ .Release.Namespace }}
+     Backend: kubectl port-forward svc/{{ include "fynncloud.fullname" . }}-server {{ .Values.server.service.port }}:{{ .Values.server.service.port }} -n {{ .Release.Namespace }}
      Web:     kubectl port-forward svc/{{ include "fynncloud.fullname" . }}-web {{ .Values.web.service.port }}:{{ .Values.web.service.port }} -n {{ .Release.Namespace }}
 {{- end }}
 
@@ -61,5 +61,5 @@
 {{- end }}
 
 ⚠️  Remember to change default passwords before going to production:
-    - backend.env.JWT_SECRET
-    - backend.env.ENCRYPTION_KEY
+    - server.env.JWT_SECRET
+    - server.env.ENCRYPTION_KEY

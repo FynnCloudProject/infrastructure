@@ -1,0 +1,19 @@
+{{- if .Values.server.storage.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "fynncloud.fullname" . }}-server-storage
+  labels:
+    {{- include "fynncloud.labels" . | nindent 4 }}
+    app.kubernetes.io/component: server
+spec:
+  accessModes:
+    - {{ .Values.server.storage.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.server.storage.size | quote }}
+  {{- $storageClass := include "fynncloud.storageClass" (dict "root" . "componentStorageClass" .Values.server.storage.storageClass) }}
+  {{- if $storageClass }}
+  storageClassName: {{ $storageClass | quote }}
+  {{- end }}
+{{- end }}

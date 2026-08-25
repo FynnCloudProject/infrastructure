@@ -124,9 +124,9 @@ externalRedis:
   url: ""
 
 # =============================================================================
-# Backend Configuration
+# Server Configuration
 # =============================================================================
-backend:
+server:
   enabled: true
   image:
     repository: ghcr.io/fynncloudproject/server
@@ -182,9 +182,9 @@ backend:
   #   - name: MY_VAR
   #     value: "my-value"
 
-  # -- Extra volume mounts for the backend container
+  # -- Extra volume mounts for the server container
   extraVolumeMounts: []
-  # -- Extra volumes for the backend pod
+  # -- Extra volumes for the server pod
   extraVolumes: []
 
   storage:
@@ -251,7 +251,7 @@ backend:
       whenUnsatisfiable: ScheduleAnyway
       labelSelector:
         matchLabels:
-          app.kubernetes.io/component: backend
+          app.kubernetes.io/component: server
 
 # =============================================================================
 # Web Frontend Configuration
@@ -365,7 +365,7 @@ gateway:
 # NGINX Gateway Fabric, Traefik) and a Gateway resource to be deployed.
 #
 # When httpRoute.rules is empty (default), the chart auto-generates two rules:
-#   /api  → backend service
+#   /api  → server service
 #   /     → web frontend service
 # Set httpRoute.rules explicitly to override this behaviour.
 httpRoute:
@@ -398,7 +398,7 @@ httpRoute:
   labels: {}
 
   # -- Explicit routing rules (overrides auto-generated rules when set)
-  # Each rule needs `matches` and `backendRefs`. Optional `filters`.
+  # Each rule needs `matches` and `serverRefs`. Optional `filters`.
   #
   # Example:
   #   rules:
@@ -412,15 +412,15 @@ httpRoute:
   #             set:
   #               - name: X-Forwarded-Proto
   #                 value: https
-  #       backendRefs:
-  #         - name: my-backend
+  #       serverRefs:
+  #         - name: my-server
   #           port: 8080
   #           weight: 100
   #     - matches:
   #         - path:
   #             type: PathPrefix
   #             value: /
-  #       backendRefs:
+  #       serverRefs:
   #         - name: my-web
   #           port: 80
   rules: []
@@ -440,7 +440,7 @@ ingress:
       paths:
         - path: /api
           pathType: Prefix
-          service: backend
+          service: server
         - path: /
           pathType: Prefix
           service: web
@@ -450,7 +450,7 @@ ingress:
 # Autoscaling (HorizontalPodAutoscaler)
 # =============================================================================
 autoscaling:
-  backend:
+  server:
     enabled: false
     minReplicas: 2
     maxReplicas: 10
@@ -467,7 +467,7 @@ autoscaling:
 # Pod Disruption Budgets
 # =============================================================================
 podDisruptionBudget:
-  backend:
+  server:
     enabled: false
     # -- Minimum available pods (mutually exclusive with maxUnavailable)
     minAvailable: 1
