@@ -181,7 +181,8 @@ PostgreSQL SSL Mode
 Image pull secrets - merges global with any per-component secrets if needed
 */}}
 {{- define "fynncloud.imagePullSecrets" -}}
-{{- with .Values.global.imagePullSecrets }}
+{{- $pullSecrets := default .Values.global.imagePullSecrets .Values.imagePullSecrets -}}
+{{- with $pullSecrets }}
 imagePullSecrets:
   {{- toYaml . | nindent 2 }}
 {{- end }}
