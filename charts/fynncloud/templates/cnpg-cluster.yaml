@@ -9,10 +9,10 @@ spec:
   instances: {{ .Values.cnpg.instances }}
   
   # Allow non-SSL connections if sslMode is 'disable'
-  # We add a permissive pg_hba rule at the top.
   {{- if eq .Values.cnpg.sslMode "disable" }}
-  pg_hba:
-    - host all all all scram-sha-256
+  postgresql:
+    pg_hba:
+      - host all all all scram-sha-256
   {{- end }}
   
   # Bootstrap configuration
