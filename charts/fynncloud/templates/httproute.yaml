@@ -3,7 +3,6 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: {{ include "fynncloud.httpRoute.name" . }}
-  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "fynncloud.labels" . | nindent 4 }}
     {{- with .Values.httpRoute.labels }}
@@ -20,8 +19,7 @@ spec:
     {{- else if .Values.gateway.enabled }}
     {{- /* Auto-reference the in-chart Gateway when no explicit parentRefs are set */}}
     - name: {{ include "fynncloud.gateway.name" . }}
-      namespace: {{ .Release.Namespace }}
-    {{- end }}
+        {{- end }}
   {{- with .Values.httpRoute.hostnames }}
   hostnames:
     {{- toYaml . | nindent 4 }}

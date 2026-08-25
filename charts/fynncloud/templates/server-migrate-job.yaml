@@ -7,6 +7,10 @@ metadata:
     {{- include "fynncloud.labels" . | nindent 4 }}
     app.kubernetes.io/component: server-migrate
   annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
     {{- with .Values.server.migrate.podAnnotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -24,18 +28,6 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      initContainers:
-        - name: wait-for-postgresql
-          image: {{ include "fynncloud.busyboxImage" . | quote }}
-          command:
-            - sh
-            - -c
-            - |
-              until nc -z {{ include "fynncloud.postgresql.host" . }} {{ include "fynncloud.postgresql.port" . }}; do
-                echo "Waiting for PostgreSQL at {{ include "fynncloud.postgresql.host" . }}:{{ include "fynncloud.postgresql.port" . }}..."
-                sleep 2
-              done
-              echo "PostgreSQL is ready"
       containers:
         - name: migrate
           image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
