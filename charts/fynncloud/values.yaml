@@ -221,22 +221,20 @@ server:
 
   # -- Startup probe (allows slow starts without killing the pod)
   startupProbe:
-    httpGet:
-      path: /api/info
-      port: http
-    failureThreshold: 30
+    tcpSocket:
+      port: 8080
+    initialDelaySeconds: 2
     periodSeconds: 5
+    failureThreshold: 30
 
   livenessProbe:
-    httpGet:
-      path: /api/info
-      port: http
+    tcpSocket:
+      port: 8080
     periodSeconds: 30
 
   readinessProbe:
-    httpGet:
-      path: /api/info
-      port: http
+    tcpSocket:
+      port: 8080
     periodSeconds: 10
 
   # -- Additional pod annotations
