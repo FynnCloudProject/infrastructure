@@ -49,6 +49,20 @@ spec:
                 sleep 2
               done
               echo "PostgreSQL is ready"
+        {{- if or .Values.redis.enabled .Values.externalRedis.host .Values.externalRedis.url }}
+        - name: wait-for-redis
+          image: {{ include "fynncloud.busyboxImage" . | quote }}
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z {{ include "fynncloud.redis.host" . }} {{ include "fynncloud.redis.port" . }}; do
+                echo "Waiting for Redis at {{ include "fynncloud.redis.host" . }}:{{ include "fynncloud.redis.port" . }}..."
+                sleep 2
+              done
+              echo "Redis is ready"
+        {{- end }}
       containers:
         - name: backend
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
