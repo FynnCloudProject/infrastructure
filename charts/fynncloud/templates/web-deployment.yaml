@@ -10,10 +10,14 @@ spec:
   {{- if not .Values.autoscaling.web.enabled }}
   replicas: {{ .Values.web.replicas }}
   {{- end }}
-  {{- with .Values.web.strategy }}
   strategy:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    type: {{ .Values.web.strategy.type | default "RollingUpdate" }}
+    {{- if eq (.Values.web.strategy.type | default "RollingUpdate") "RollingUpdate" }}
+    {{- with .Values.web.strategy.rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
   selector:
     matchLabels:
       {{- include "fynncloud.selectorLabels" . | nindent 6 }}
