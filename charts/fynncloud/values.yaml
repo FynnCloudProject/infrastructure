@@ -484,3 +484,14 @@ networkPolicy:
   extraIngress: []
   # -- Additional egress rules
   extraEgress: []
+
+# =============================================================================
+# S3 Object Storage Configuration
+# =============================================================================
+s3:
+  enabled: true
+  bucket: "fynncloud"
+  endpoint: "http://minio.minio.svc.cluster.local:9000"
+  region: "us-east-1"
+  accessKeyId: "admin"
+  secretAccessKey: "FynnCloudS3SecretPassword2026!"
