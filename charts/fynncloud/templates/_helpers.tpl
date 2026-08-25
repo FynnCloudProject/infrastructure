@@ -237,7 +237,7 @@ Redis URL
 */}}
 {{- define "fynncloud.redis.url" -}}
 {{- if .Values.redis.enabled }}
-{{- printf "redis://%s-redis.%s.svc.cluster.local:6379" (include "fynncloud.fullname" .) (default "fynncloud" .Release.Namespace) }}
+{{- printf "redis://%s-redis.fynncloud.svc.cluster.local:6379" (include "fynncloud.fullname" .) }}
 {{- else if .Values.externalRedis.url }}
 {{- .Values.externalRedis.url }}
 {{- else if .Values.externalRedis.host }}
