@@ -41,19 +41,8 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.server.storage.enabled }}
       initContainers:
-        - name: wait-for-postgresql
-          image: {{ include "fynncloud.busyboxImage" . | quote }}
-          command:
-            - sh
-            - -c
-            - |
-              until nc -z -w 2 {{ include "fynncloud.postgresql.host" . }}.{{ .Release.Namespace }}.svc.cluster.local {{ include "fynncloud.postgresql.port" . }}; do
-                echo "Waiting for PostgreSQL at {{ include "fynncloud.postgresql.host" . }}:{{ include "fynncloud.postgresql.port" . }}..."
-                sleep 2
-              done
-              echo "PostgreSQL is ready"
-        {{- if .Values.server.storage.enabled }}
         - name: init-storage-permissions
           image: {{ include "fynncloud.busyboxImage" . | quote }}
           command:
@@ -64,21 +53,7 @@ spec:
           volumeMounts:
             - name: storage
               mountPath: /app/Storage
-        {{- end }}
-        {{- if or .Values.redis.enabled .Values.externalRedis.host .Values.externalRedis.url }}
-        - name: wait-for-redis
-          image: {{ include "fynncloud.busyboxImage" . | quote }}
-          imagePullPolicy: IfNotPresent
-          command:
-            - sh
-            - -c
-            - |
-              until nc -z -w 2 {{ include "fynncloud.redis.host" . }}.{{ .Release.Namespace }}.svc.cluster.local {{ include "fynncloud.redis.port" . }}; do
-                echo "Waiting for Redis at {{ include "fynncloud.redis.host" . }}:{{ include "fynncloud.redis.port" . }}..."
-                sleep 2
-              done
-              echo "Redis is ready"
-        {{- end }}
+      {{- end }}
       containers:
         - name: server
           image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
