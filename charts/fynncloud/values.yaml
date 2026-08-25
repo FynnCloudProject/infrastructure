@@ -288,26 +288,20 @@ web:
   securityContext: {}
 
   startupProbe:
-    httpGet:
-      path: /
+    tcpSocket:
       port: http
     failureThreshold: 30
     periodSeconds: 5
-    timeoutSeconds: 5
 
   livenessProbe:
-    httpGet:
-      path: /
+    tcpSocket:
       port: http
     periodSeconds: 30
-    timeoutSeconds: 5
 
   readinessProbe:
-    httpGet:
-      path: /
+    tcpSocket:
       port: http
     periodSeconds: 10
-    timeoutSeconds: 5
 
   podAnnotations: {}
   podLabels: {}
