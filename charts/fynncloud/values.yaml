@@ -129,7 +129,7 @@ externalRedis:
 server:
   enabled: true
   image:
-    repository: ghcr.io/fynncloudproject/server
+    repository: repo.fynncloud.ch/server
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -259,7 +259,7 @@ server:
 web:
   enabled: true
   image:
-    repository: ghcr.io/fynncloudproject/web
+    repository: repo.fynncloud.ch/web
     tag: latest
     pullPolicy: Always
   replicas: 1
