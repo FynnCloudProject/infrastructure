@@ -51,7 +51,7 @@ spec:
           {{- end }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ .Values.web.port | default 3000 }}
               protocol: TCP
           {{- with .Values.web.extraEnv }}
           env:
