@@ -132,7 +132,7 @@ server:
     repository: ghcr.io/fynncloudproject/server
     tag: latest
     pullPolicy: Always
-  replicas: 3
+  replicas: 1
 
   # -- Override the container command (leave empty to use image entrypoint)
   command: []
