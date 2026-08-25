@@ -60,8 +60,10 @@ spec:
               value: "0.0.0.0"
             - name: NITRO_PORT
               value: "3000"
+            {{- if .Values.web.apiBase }}
             - name: NUXT_PUBLIC_API_BASE
-              value: {{ .Values.web.apiBase | default "" | quote }}
+              value: {{ .Values.web.apiBase | quote }}
+            {{- end }}
             {{- with .Values.web.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
