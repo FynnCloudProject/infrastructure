@@ -77,6 +77,10 @@ spec:
                   key: {{ include "fynncloud.postgresql.secretKey" . }}
             - name: DATABASE_URL
               value: "postgresql://{{ include "fynncloud.postgresql.username" . }}:$(POSTGRES_PASSWORD)@{{ include "fynncloud.postgresql.host" . }}:{{ include "fynncloud.postgresql.port" . }}/{{ include "fynncloud.postgresql.database" . }}?sslmode={{ include "fynncloud.postgresql.sslMode" . }}"
+            {{- if or .Values.redis.enabled .Values.externalRedis.host .Values.externalRedis.url }}
+            - name: REDIS_URL
+              value: {{ include "fynncloud.redis.url" . | quote }}
+            {{- end }}
             - name: STORAGE_PATH
               value: "/app/Storage/"
             - name: APP_NAME

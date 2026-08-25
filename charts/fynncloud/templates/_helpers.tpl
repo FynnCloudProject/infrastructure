@@ -205,3 +205,43 @@ Busybox image for init containers
 {{- define "fynncloud.busyboxImage" -}}
 {{- default "busybox:1.36" .Values.global.busyboxImage -}}
 {{- end }}
+{{/*
+Redis host
+*/}}
+{{- define "fynncloud.redis.host" -}}
+{{- if .Values.redis.enabled }}
+{{- printf "%s-redis" (include "fynncloud.fullname" .) }}
+{{- else if .Values.externalRedis.host }}
+{{- .Values.externalRedis.host }}
+{{- else }}
+{{- printf "%s-redis" (include "fynncloud.fullname" .) }}
+{{- end }}
+{{- end }}
+
+{{/*
+Redis port
+*/}}
+{{- define "fynncloud.redis.port" -}}
+{{- if .Values.redis.enabled }}
+{{- printf "6379" }}
+{{- else if .Values.externalRedis.port }}
+{{- .Values.externalRedis.port | toString }}
+{{- else }}
+{{- printf "6379" }}
+{{- end }}
+{{- end }}
+
+{{/*
+Redis URL
+*/}}
+{{- define "fynncloud.redis.url" -}}
+{{- if .Values.redis.enabled }}
+{{- printf "redis://%s-redis:6379" (include "fynncloud.fullname" .) }}
+{{- else if .Values.externalRedis.url }}
+{{- .Values.externalRedis.url }}
+{{- else if .Values.externalRedis.host }}
+{{- printf "redis://%s:%s" (include "fynncloud.redis.host" .) (include "fynncloud.redis.port" .) }}
+{{- else }}
+{{- printf "" }}
+{{- end }}
+{{- end }}

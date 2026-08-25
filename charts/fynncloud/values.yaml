@@ -77,6 +77,53 @@ externalPostgresql:
   existingSecret: ""
 
 # =============================================================================
+# Redis Configuration
+# =============================================================================
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: 7-alpine
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 6379
+    annotations: {}
+
+  persistence:
+    enabled: true
+    size: 5Gi
+    accessMode: ReadWriteOnce
+    # storageClass: ""
+    # existingClaim: ""
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  podAnnotations: {}
+  podLabels: {}
+  podSecurityContext: {}
+  securityContext: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# =============================================================================
+# External Redis
+# =============================================================================
+# Used when redis.enabled=false and you connect to an external Redis instance
+externalRedis:
+  host: ""
+  port: 6379
+  url: ""
+
+# =============================================================================
 # Backend Configuration
 # =============================================================================
 backend:
