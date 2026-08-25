@@ -202,7 +202,9 @@ server:
   #     memory: 512Mi
 
   # -- Pod-level security context
-  podSecurityContext: {}
+  podSecurityContext:
+    fsGroup: 995
+    fsGroupChangePolicy: "OnRootMismatch"
   #   runAsNonRoot: true
   #   runAsUser: 1000
   #   runAsGroup: 1000

@@ -53,6 +53,18 @@ spec:
                 sleep 2
               done
               echo "PostgreSQL is ready"
+        {{- if .Values.server.storage.enabled }}
+        - name: init-storage-permissions
+          image: {{ include "fynncloud.busyboxImage" . | quote }}
+          command:
+            - sh
+            - -c
+            - |
+              chown -R 995:995 /app/Storage && chmod -R 775 /app/Storage
+          volumeMounts:
+            - name: storage
+              mountPath: /app/Storage
+        {{- end }}
         {{- if or .Values.redis.enabled .Values.externalRedis.host .Values.externalRedis.url }}
         - name: wait-for-redis
           image: {{ include "fynncloud.busyboxImage" . | quote }}
