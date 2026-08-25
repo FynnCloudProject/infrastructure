@@ -81,7 +81,7 @@ spec:
                   name: {{ include "fynncloud.postgresql.secretName" . }}
                   key: {{ include "fynncloud.postgresql.secretKey" . }}
             - name: DATABASE_URL
-              value: "postgresql://{{ include "fynncloud.postgresql.username" . }}:$(POSTGRES_PASSWORD)@{{ include "fynncloud.postgresql.host" . }}:{{ include "fynncloud.postgresql.port" . }}/{{ include "fynncloud.postgresql.database" . }}?sslmode={{ include "fynncloud.postgresql.sslMode" . }}"
+              value: "postgresql://{{ include "fynncloud.postgresql.username" . }}:$(POSTGRES_PASSWORD)@{{ include "fynncloud.postgresql.host" . }}.{{ default "fynncloud" .Release.Namespace }}.svc.cluster.local:{{ include "fynncloud.postgresql.port" . }}/{{ include "fynncloud.postgresql.database" . }}?sslmode={{ include "fynncloud.postgresql.sslMode" . }}"
             {{- if or .Values.redis.enabled .Values.externalRedis.host .Values.externalRedis.url }}
             - name: REDIS_URL
               value: {{ include "fynncloud.redis.url" . | quote }}
