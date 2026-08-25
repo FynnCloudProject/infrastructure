@@ -272,7 +272,7 @@ web:
 
   service:
     type: ClusterIP
-    port: 3000
+    port: 80
     annotations: {}
 
   # -- Additional environment variables
