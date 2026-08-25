@@ -48,7 +48,7 @@ spec:
             - sh
             - -c
             - |
-              until nc -z {{ include "fynncloud.postgresql.host" . }} {{ include "fynncloud.postgresql.port" . }}; do
+              until nc -z -w 2 {{ include "fynncloud.postgresql.host" . }} {{ include "fynncloud.postgresql.port" . }}; do
                 echo "Waiting for PostgreSQL at {{ include "fynncloud.postgresql.host" . }}:{{ include "fynncloud.postgresql.port" . }}..."
                 sleep 2
               done
@@ -73,7 +73,7 @@ spec:
             - sh
             - -c
             - |
-              until nc -z {{ include "fynncloud.redis.host" . }} {{ include "fynncloud.redis.port" . }}; do
+              until nc -z -w 2 {{ include "fynncloud.redis.host" . }} {{ include "fynncloud.redis.port" . }}; do
                 echo "Waiting for Redis at {{ include "fynncloud.redis.host" . }}:{{ include "fynncloud.redis.port" . }}..."
                 sleep 2
               done
