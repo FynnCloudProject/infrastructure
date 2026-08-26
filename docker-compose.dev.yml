@@ -72,7 +72,7 @@ services:
     environment:
       DATABASE_URL: postgresql://fynncloud:${DB_PASSWORD}@db:5432/fynncloud
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
-      EMBEDDING_URL: ${EMBEDDING_URL:-}
+      EMBEDDING_URL: ${EMBEDDING_URL}
       AUTO_MIGRATE: ${AUTO_MIGRATE:-true}
       STORAGE_PATH: /app/Storage/
       APP_NAME: ${APP_NAME:-FynnCloud}
@@ -80,21 +80,21 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      FRONTEND_URL: ${FRONTEND_URL}
       MAX_CHUNK_SIZE: ${MAX_CHUNK_SIZE:-100}mb
       MAX_BODY_SIZE: ${MAX_BODY_SIZE:-100}mb
       LOG_LEVEL: ${LOG_LEVEL:-debug}
       RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-false}
-      DOCUMENT_SERVER_URL: ${DOCUMENT_SERVER_URL:-}
+      DOCUMENT_SERVER_URL: ${DOCUMENT_SERVER_URL}
       OFFICE_PROVIDER: ${OFFICE_PROVIDER:-eurooffice}
       EUROOFFICE_JWT_SECRET: ${EUROOFFICE_JWT_SECRET:-dev_eurooffice_secret_32_chars_min}
-      WOPI_PUBLIC_URL: ${WOPI_PUBLIC_URL:-}
+      WOPI_PUBLIC_URL: ${WOPI_PUBLIC_URL}
       # Optional S3 Storage
-      S3_BUCKET: ${S3_BUCKET:-}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
-      AWS_REGION: ${AWS_REGION:-}
-      AWS_ENDPOINT: ${AWS_ENDPOINT:-}
+      S3_BUCKET: ${S3_BUCKET}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_ENDPOINT: ${AWS_ENDPOINT}
     volumes:
       - server_storage_dev:/app/Storage
     networks:
@@ -117,7 +117,7 @@ services:
       NODE_ENV: development
       NITRO_HOST: "0.0.0.0"
       NITRO_PORT: "3000"
-      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-}
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE}
       NUXT_PUBLIC_MAINTENANCE_MODE: ${NUXT_PUBLIC_MAINTENANCE_MODE:-false}
     networks:
       - fynncloud-network
