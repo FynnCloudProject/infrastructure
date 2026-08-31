@@ -495,3 +495,20 @@ s3:
   region: "nbg1"
   accessKeyId: "1YE4Y8RHJOCH1FVBFCDB"
   secretAccessKey: "SgcWRouVtLXfmVFlbQPvD1EhN5DM1F0kw5CrYXvr"
+
+# =============================================================================
+# Semantic Search & Embeddings Configuration (OpenAI-compatible)
+# =============================================================================
+embeddings:
+  # -- Enable semantic file search via an OpenAI-compatible embeddings service
+  enabled: false
+  # -- Base URL of the OpenAI-compatible embedding service (e.g. http://embeddings:8000/v1 or https://api.openai.com/v1)
+  url: ""
+  # -- Model identifier to request from the embedding provider
+  model: "jinaai/jina-clip-v2"
+  # -- API key if connecting to an authenticated provider (leave empty if unauthenticated)
+  apiKey: ""
+  # -- Name of an existing Secret containing the embedding API key
+  existingSecret: ""
+  # -- Key within existingSecret containing the API key (default: embedding-api-key)
+  secretKey: "embedding-api-key"

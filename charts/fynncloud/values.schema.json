@@ -178,6 +178,28 @@
       "properties": {
         "enabled": { "type": "boolean" }
       }
+    },
+    "s3": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "bucket": { "type": "string" },
+        "endpoint": { "type": "string" },
+        "region": { "type": "string" },
+        "accessKeyId": { "type": "string" },
+        "secretAccessKey": { "type": "string" }
+      }
+    },
+    "embeddings": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "url": { "type": "string" },
+        "model": { "type": "string" },
+        "apiKey": { "type": "string" },
+        "existingSecret": { "type": "string" },
+        "secretKey": { "type": "string" }
+      }
     }
   }
 }

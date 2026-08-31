@@ -122,6 +122,22 @@ spec:
             - name: AWS_SECRET_ACCESS_KEY
               value: {{ .Values.s3.secretAccessKey | quote }}
             {{- end }}
+            {{- if and .Values.embeddings .Values.embeddings.enabled }}
+            - name: EMBEDDING_URL
+              value: {{ .Values.embeddings.url | quote }}
+            - name: EMBEDDING_MODEL
+              value: {{ .Values.embeddings.model | default "jinaai/jina-clip-v2" | quote }}
+            {{- if .Values.embeddings.apiKey }}
+            - name: EMBEDDING_API_KEY
+              value: {{ .Values.embeddings.apiKey | quote }}
+            {{- else if .Values.embeddings.existingSecret }}
+            - name: EMBEDDING_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.embeddings.existingSecret }}
+                  key: {{ .Values.embeddings.secretKey | default "embedding-api-key" }}
+            {{- end }}
+            {{- end }}
             {{- with .Values.server.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
