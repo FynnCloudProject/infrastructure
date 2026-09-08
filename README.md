@@ -11,8 +11,10 @@ cd FynnCloud-Infrastructure
 # Generates .env with required keys if missing and starts the containers
 ./scripts/start.sh
 ```
+> [!NOTE]
+> Do note since the access and refresh token cookies are marked as secure in a production deployment you will not be able to sign in unless you have working https.
 
-Once started, open `http://localhost` (or your server's IP address).
+Once started, open `https://yourdomain`.
 
 ## Stack Overview
 
