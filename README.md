@@ -12,9 +12,9 @@ cd FynnCloud-Infrastructure
 ./scripts/start.sh
 ```
 > [!NOTE]
-> Do note since the access and refresh token cookies are marked as secure in a production deployment you will not be able to sign in unless you have working https.
+> In production deployments, the access and refresh token cookies use the Secure flag, which prevents sign-in over unencrypted HTTP. A valid HTTPS setup is required.
 
-Once started, open `https://yourdomain`.
+Once started, open the website to start setup or access /setup on your configured domain manually.
 
 ## Stack Overview
 
