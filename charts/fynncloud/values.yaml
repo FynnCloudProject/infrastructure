@@ -154,14 +154,19 @@ server:
 
   # -- Application environment variables
   env:
-    APP_NAME: "FynnCloud"
-    PRIMARY_COLOR: "#007bff"
-    JWT_SECRET: "changeme"
-    ENCRYPTION_KEY: "changeme"
-    CORS_ALLOWED_ORIGINS: "*"
-    FRONTEND_URL: "http://localhost"
-    MAX_CHUNK_SIZE: "100"
+    BRANDING_APP_NAME: "FynnCloud"
+    BRANDING_PRIMARY_COLOR: "#007bff"
+    SERVER_CORS_ALLOWED_ORIGINS: "*"
+    APP_FRONTEND_URL: "http://localhost"
+    STORAGE_MAX_CHUNK_SIZE: "100"
     MAX_BODY_SIZE: "100"
+    # Legacy aliases (backward compatibility)
+    APP_NAME: ""
+    PRIMARY_COLOR: ""
+    CORS_ALLOWED_ORIGINS: ""
+    FRONTEND_URL: ""
+    MAX_CHUNK_SIZE: ""
+    STORAGE_MAX_BODY_SIZE: ""
 
   # -- Name of an existing Secret with a `jwt-secret` key
   existingSecret: ""
