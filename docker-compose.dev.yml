@@ -9,7 +9,7 @@ services:
     volumes:
       - ./nginx-proxy.conf.template:/etc/nginx/templates/default.conf.template:ro
     environment:
-      - MAX_BODY_SIZE=${MAX_BODY_SIZE:-100}
+      - MAX_BODY_SIZE=${MAX_BODY_SIZE:-${SERVER_MAX_BODY_SIZE:-100}}
     networks:
       - fynncloud-network
     ports:
@@ -40,6 +40,7 @@ services:
       - postgres_data_dev:/var/lib/postgresql/data
     networks:
       - fynncloud-network
+      - fynncloud-apps-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U fynncloud -d fynncloud"]
       interval: 10s
@@ -60,8 +61,32 @@ services:
       timeout: 5s
       retries: 5
 
+  socket-proxy:
+    image: ghcr.io/wollomatic/socket-proxy:1
+    container_name: fynncloud-socket-proxy-dev
+    restart: unless-stopped
+    user: "0:0"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    command:
+      - "-listenip=0.0.0.0"
+      - "-allowfrom=fynncloud-server-dev"
+      - "-allowHEAD=/_ping"
+      - "-allowGET=(/v[\\d.]+)?/(_ping|version|images/.*/json|containers/fynncloud-app-[a-z0-9-]+/json|networks/fynncloud-apps-network|volumes/fynncloud-app-data-[a-z0-9-]+)"
+      - "-allowPOST=(/v[\\d.]+)?/(images/create|containers/create|containers/fynncloud-app-[a-z0-9-]+/(start|stop|restart)|volumes/create|networks/create)"
+      - "-allowDELETE=(/v[\\d.]+)?/(containers/fynncloud-app-[a-z0-9-]+|volumes/fynncloud-app-data-[a-z0-9-]+)"
+    expose:
+      - "2375"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - fynncloud-socket-network
+
   server:
-    image: repo.fynncloud.ch/server:latest
+    image: ${SERVER_IMAGE:-ghcr.io/fynncloudproject/server:latest}
     container_name: fynncloud-server-dev
     restart: unless-stopped
     depends_on:
@@ -69,36 +94,64 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      socket-proxy:
+        condition: service_started
+    env_file:
+      - path: .env
+        required: false
     environment:
       DATABASE_URL: postgresql://fynncloud:${DB_PASSWORD}@db:5432/fynncloud
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: fynncloud
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
-      EMBEDDING_URL: ${EMBEDDING_URL}
-      AUTO_MIGRATE: ${AUTO_MIGRATE:-true}
+      DOCKER_SOCKET_PROXY_URL: ${DOCKER_SOCKET_PROXY_URL:-http://fynncloud-socket-proxy-dev:2375}
+      DOCKER_APPS_NETWORK: ${DOCKER_APPS_NETWORK:-fynncloud-apps-network}
+      FYNNCLOUD_INTERNAL_API_URL: ${FYNNCLOUD_INTERNAL_API_URL:-http://fynncloud-server-dev:8080}
+      DATABASE_AUTO_MIGRATE: ${DATABASE_AUTO_MIGRATE:-${AUTO_MIGRATE:-true}}
       STORAGE_PATH: /app/Storage/
-      APP_NAME: ${APP_NAME:-FynnCloud}
-      PRIMARY_COLOR: ${PRIMARY_COLOR:-blue}
-      JWT_SECRET: ${JWT_SECRET}
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
-      FRONTEND_URL: ${FRONTEND_URL}
-      MAX_CHUNK_SIZE: ${MAX_CHUNK_SIZE:-100}mb
-      MAX_BODY_SIZE: ${MAX_BODY_SIZE:-100}mb
+      BRANDING_APP_NAME: ${BRANDING_APP_NAME:-${APP_NAME:-FynnCloud}}
+      BRANDING_PRIMARY_COLOR: ${BRANDING_PRIMARY_COLOR:-${PRIMARY_COLOR:-blue}}
+      BRANDING_SHOW_LOGO_AND_NAME: ${BRANDING_SHOW_LOGO_AND_NAME:-${SHOW_LOGO_AND_NAME:-false}}
+      BRANDING_SVG_COLOR_MODE: ${BRANDING_SVG_COLOR_MODE:-${SVG_COLOR_MODE:-monochrome}}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-${JWT_SECRET}}
+      SECURITY_ENCRYPTION_KEY: ${SECURITY_ENCRYPTION_KEY:-${ENCRYPTION_KEY}}
+      SERVER_CORS_ALLOWED_ORIGINS: ${SERVER_CORS_ALLOWED_ORIGINS:-${CORS_ALLOWED_ORIGINS:-*}}
+      APP_FRONTEND_URL: ${APP_FRONTEND_URL:-${FRONTEND_URL}}
+      STORAGE_TRASH_RETENTION_DAYS: ${STORAGE_TRASH_RETENTION_DAYS:-${TRASH_RETENTION_DAYS:-30}}
+      STORAGE_MAX_CHUNK_SIZE: ${STORAGE_MAX_CHUNK_SIZE:-${MAX_CHUNK_SIZE:-100}}mb
+      MAX_BODY_SIZE: ${MAX_BODY_SIZE:-${SERVER_MAX_BODY_SIZE:-100}}mb
       LOG_LEVEL: ${LOG_LEVEL:-debug}
+      LOG_FORMAT: ${LOG_FORMAT:-}
+      ACCESS_REGISTRATION_ENABLED: ${ACCESS_REGISTRATION_ENABLED:-${REGISTRATION_ENABLED:-true}}
       RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-false}
-      DOCUMENT_SERVER_URL: ${DOCUMENT_SERVER_URL}
-      OFFICE_PROVIDER: ${OFFICE_PROVIDER:-eurooffice}
-      EUROOFFICE_JWT_SECRET: ${EUROOFFICE_JWT_SECRET:-dev_eurooffice_secret_32_chars_min}
-      WOPI_PUBLIC_URL: ${WOPI_PUBLIC_URL}
+      RATE_LIMIT_AUTH: ${RATE_LIMIT_AUTH:-10}
+      RATE_LIMIT_SHARE: ${RATE_LIMIT_SHARE:-60}
+      RATE_LIMIT_API: ${RATE_LIMIT_API:-300}
+      RATE_LIMIT_AI: ${RATE_LIMIT_AI:-20}
+      DOCS_SERVER_URL: ${DOCS_SERVER_URL:-${DOCUMENT_SERVER_URL}}
+      DOCS_PROVIDER: ${DOCS_PROVIDER:-${OFFICE_PROVIDER:-eurooffice}}
+      DOCS_JWT_SECRET: ${DOCS_JWT_SECRET:-${EUROOFFICE_JWT_SECRET:-dev_eurooffice_secret_32_chars_min}}
+      DOCS_WOPI_PUBLIC_URL: ${DOCS_WOPI_PUBLIC_URL:-${WOPI_PUBLIC_URL}}
+      AI_ENABLED: ${AI_ENABLED:-false}
+      AI_API_URL: ${AI_API_URL:-https://api.openai.com/v1/chat/completions}
+      AI_API_KEY: ${AI_API_KEY:-${OPENAI_API_KEY}}
+      AI_MODEL: ${AI_MODEL:-gpt-4o-mini}
+      AI_EMBEDDING_URL: ${AI_EMBEDDING_URL:-${EMBEDDING_URL}}
+      AI_EMBEDDING_API_KEY: ${AI_EMBEDDING_API_KEY:-${EMBEDDING_API_KEY}}
+      AI_EMBEDDING_MODEL: ${AI_EMBEDDING_MODEL:-${EMBEDDING_MODEL:-jinaai/jina-clip-v2}}
       # Optional S3 Storage
-      S3_BUCKET: ${S3_BUCKET}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      AWS_REGION: ${AWS_REGION}
-      AWS_ENDPOINT: ${AWS_ENDPOINT}
+      STORAGE_S3_BUCKET: ${STORAGE_S3_BUCKET:-${S3_BUCKET}}
+      STORAGE_AWS_ACCESS_KEY_ID: ${STORAGE_AWS_ACCESS_KEY_ID:-${AWS_ACCESS_KEY_ID}}
+      STORAGE_AWS_SECRET_ACCESS_KEY: ${STORAGE_AWS_SECRET_ACCESS_KEY:-${AWS_SECRET_ACCESS_KEY}}
+      STORAGE_AWS_REGION: ${STORAGE_AWS_REGION:-${AWS_REGION}}
+      STORAGE_AWS_ENDPOINT: ${STORAGE_AWS_ENDPOINT:-${AWS_ENDPOINT}}
     volumes:
       - server_storage_dev:/app/Storage
     networks:
       - fynncloud-network
+      - fynncloud-socket-network
+      - fynncloud-apps-network
     ports:
       - "${SERVER_PORT:-8080}:8080"
     expose:
@@ -110,7 +163,7 @@ services:
       retries: 3
 
   web:
-    image: repo.fynncloud.ch/web:latest
+    image: ${WEB_IMAGE:-ghcr.io/fynncloudproject/web:latest}
     container_name: fynncloud-web-dev
     restart: unless-stopped
     environment:
@@ -166,6 +219,7 @@ services:
       JWT_SECRET: ${EUROOFFICE_JWT_SECRET:-dev_eurooffice_secret_32_chars_min}
       EXAMPLE_ENABLED: "false"
       ADMINPANEL_ENABLED: "false"
+      GENERATE_FONTS: "false"
     networks:
       - fynncloud-network
     ports:
@@ -182,6 +236,13 @@ services:
 
 networks:
   fynncloud-network:
+    driver: bridge
+  fynncloud-socket-network:
+    driver: bridge
+    internal: true
+    attachable: false
+  fynncloud-apps-network:
+    name: fynncloud-apps-network
     driver: bridge
 
 volumes:
