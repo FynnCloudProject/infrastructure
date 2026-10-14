@@ -25,6 +25,9 @@ redis_data_dev/
 *.key
 *.pem
 
+# Local scripts
+scripts/build-and-push.sh
+
 # Logs
 *.log
 
