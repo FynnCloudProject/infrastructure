@@ -50,14 +50,14 @@ cp .env.example .env
 
 | Variable | Default | Description |
 | :--- | :--- | :--- |
-| `FRONTEND_URL` | `http://localhost` | Public URL of the web interface |
+| `APP_FRONTEND_URL` *(legacy: `FRONTEND_URL`)* | `http://localhost` | Public URL of the web interface |
 | `PROXY_PORT` | `80` | Host port for the Nginx proxy |
-| `JWT_SECRET` | *(auto-generated)* | Key used to sign JWT authentication tokens |
-| `ENCRYPTION_KEY` | *(auto-generated)* | 256-bit key used to encrypt 2FA secrets at rest |
+| `AUTH_JWT_SECRET` *(legacy: `JWT_SECRET`)* | *(auto-generated)* | Key used to sign JWT authentication tokens |
+| `SECURITY_ENCRYPTION_KEY` *(legacy: `ENCRYPTION_KEY`)* | *(auto-generated)* | 256-bit key used to encrypt 2FA secrets at rest |
 | `DB_PASSWORD` | *(auto-generated)* | Database password for user `fynncloud` |
-| `AUTO_MIGRATE` | `true` | Run schema migrations automatically on startup |
-| `MAX_CHUNK_SIZE` | `100` | Chunk size in MB for multipart uploads |
-| `MAX_BODY_SIZE` | `100` | Max request body size in MB |
+| `DATABASE_AUTO_MIGRATE` *(legacy: `AUTO_MIGRATE`)* | `true` | Run schema migrations automatically on startup |
+| `STORAGE_MAX_CHUNK_SIZE` *(legacy: `MAX_CHUNK_SIZE`)* | `100` | Chunk size in MB for multipart uploads |
+| `MAX_BODY_SIZE` *(aliases: `SERVER_MAX_BODY_SIZE`, `STORAGE_MAX_BODY_SIZE`)* | `100` | Max request body size in MB |
 
 ## HTTPS / Reverse Proxy
 
