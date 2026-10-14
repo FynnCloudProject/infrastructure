@@ -3,7 +3,7 @@
 [![Helm Chart Version](https://img.shields.io/badge/Helm%20Chart-v0.4.1-blue.svg)](https://github.com/FynnCloudProject)
 [![Kubernetes Version](https://img.shields.io/badge/Kubernetes-%3E%3D1.27.0-brightgreen.svg)](https://kubernetes.io)
 
-Official Helm chart for deploying **FynnCloud** — high-performance, self-hosted cloud storage on Kubernetes.
+Official Helm chart for deploying **FynnCloud** - high-performance, self-hosted cloud storage on Kubernetes.
 
 ---
 
@@ -112,6 +112,19 @@ ingress:
           service: web
 ```
 
+### Scenario E: Semantic Search & Embeddings (OpenAI-compatible)
+
+To connect an OpenAI-compatible embedding service (such as self-hosted `embeddings` / `jina-clip-v2` or commercial provider):
+
+```yaml
+embeddings:
+  enabled: true
+  url: "http://embeddings.fynncloud.svc.cluster.local:8000/v1"
+  model: "jinaai/jina-clip-v2"
+  # apiKey: "optional-api-key"
+  # existingSecret: "my-embedding-secret" # Secret containing key `embedding-api-key`
+```
+
 ---
 
 ## 📊 Configuration Parameters
@@ -130,7 +143,12 @@ ingress:
 | `server.storage.enabled` | Enable PVC for local binary/file storage | `true` |
 | `server.storage.size` | Storage capacity for PVC | `"5Gi"` |
 | `server.env.JWT_SECRET` | Secret key for JWT signing | `"changeme"` |
-| `server.env.ENCRYPTION_KEY` | Key for encrypting 2FA secrets at rest. Required, permanent — changing it makes stored 2FA secrets undecryptable | `"changeme"` |
+| `server.env.ENCRYPTION_KEY` | Key for encrypting 2FA secrets at rest. Required, permanent - changing it makes stored 2FA secrets undecryptable | `"changeme"` |
+| `embeddings.enabled` | Enable semantic search via OpenAI-compatible embeddings | `false` |
+| `embeddings.url` | Base URL of OpenAI-compatible embedding service | `""` |
+| `embeddings.model` | Model identifier to request | `"jinaai/jina-clip-v2"` |
+| `embeddings.apiKey` | API key if connecting to authenticated provider | `""` |
+| `embeddings.existingSecret` | Existing Secret containing `embedding-api-key` | `""` |
 | `web.enabled` | Deploy web frontend | `true` |
 | `web.replicas` | Number of web pod replicas | `1` |
 | `web.image.repository` | Container image repository for web | `ghcr.io/fynncloudproject/web` |
