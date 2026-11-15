@@ -1,0 +1,40 @@
+{{- if and .Values.livekit .Values.livekit.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "fynncloud.fullname" . }}-livekit-config
+  labels:
+    {{- include "fynncloud.labels" . | nindent 4 }}
+    app.kubernetes.io/component: livekit
+data:
+  livekit.yaml: |
+    port: {{ .Values.livekit.service.port | default 7880 }}
+    log_level: {{ .Values.livekit.logLevel | default "info" }}
+    {{- $redisAddr := include "fynncloud.redis.address" . }}
+    {{- if $redisAddr }}
+    redis:
+      address: {{ $redisAddr | quote }}
+    {{- end }}
+    rtc:
+      udp_port: {{ .Values.livekit.rtc.udpPort | default 7882 }}
+      tcp_port: {{ .Values.livekit.rtc.tcpPort | default 7881 }}
+      {{- if .Values.livekit.rtc.nodeIP }}
+      use_external_ip: false
+      node_ip: {{ .Values.livekit.rtc.nodeIP | quote }}
+      {{- else }}
+      use_external_ip: {{ .Values.livekit.rtc.useExternalIP }}
+      {{- end }}
+    turn:
+      enabled: {{ .Values.livekit.turn.enabled }}
+      {{- if .Values.livekit.turn.enabled }}
+      udp_port: {{ .Values.livekit.turn.udpPort | default 3478 }}
+      {{- if .Values.livekit.turn.domain }}
+      domain: {{ .Values.livekit.turn.domain | quote }}
+      {{- end }}
+      {{- if and .Values.livekit.turn.domain .Values.livekit.turn.tlsSecretName }}
+      tls_port: {{ .Values.livekit.turn.tlsPort | default 5349 }}
+      cert_file: /etc/livekit/tls/tls.crt
+      key_file: /etc/livekit/tls/tls.key
+      {{- end }}
+      {{- end }}
+{{- end }}

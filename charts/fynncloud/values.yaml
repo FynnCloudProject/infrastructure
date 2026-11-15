@@ -517,3 +517,81 @@ embeddings:
   existingSecret: ""
   # -- Key within existingSecret containing the API key (default: embedding-api-key)
   secretKey: "embedding-api-key"
+
+# =============================================================================
+# LiveKit WebRTC SFU & Embedded TURN Configuration
+# =============================================================================
+# Enables scalable audio/video/screen-sharing calls and 4G CGNAT/NAT64 traversal.
+# Runs with hostNetwork: true so single-port UDP mux (7882/udp), ICE/TCP (7881/tcp),
+# and embedded TURN (3478/udp, optional 5349/tcp) bind directly to the worker node's
+# public IPv4/IPv6 interfaces without K8s CNI SNAT or TCP-only LoadBalancer bottlenecks.
+livekit:
+  enabled: false
+  image:
+    repository: livekit/livekit-server
+    tag: v1.13.11
+    pullPolicy: IfNotPresent
+  replicas: 1
+  logLevel: "info"
+
+  # -- Bind directly to node network interfaces for WebRTC UDP/TCP & TURN media
+  hostNetwork: true
+  terminationGracePeriodSeconds: 300
+
+  strategy:
+    type: Recreate
+
+  service:
+    type: ClusterIP
+    port: 7880
+    annotations: {}
+
+  # -- Optional browser-facing signaling URL override (defaults to wss://<hostname>/livekit)
+  publicUrl: ""
+  # -- Optional internal Twirp HTTP URL override
+  internalUrl: ""
+
+  rtc:
+    # -- Single-port UDP mux for WebRTC media (open on worker node firewall)
+    udpPort: 7882
+    # -- ICE-over-TCP fallback port (open on worker node firewall)
+    tcpPort: 7881
+    # -- Discover worker node's public IP automatically via STUN
+    useExternalIP: true
+    # -- Optional explicit public IP override (disables STUN auto-discovery when set)
+    nodeIP: ""
+
+  turn:
+    # -- Enable LiveKit's embedded TURN relay for restrictive 4G CGNAT / corporate firewalls
+    enabled: true
+    udpPort: 3478
+    # -- Optional DNS hostname pointing to the LiveKit worker node IP (enables NAT64 hostname resolution & TURN/TLS)
+    domain: ""
+    tlsPort: 5349
+    # -- Kubernetes TLS Secret (tls.crt / tls.key) matching `turn.domain` to enable TURN/TLS on `tlsPort`
+    tlsSecretName: ""
+
+  auth:
+    apiKey: "APIfynncloud"
+    apiSecret: "changeme-generate-at-least-32-char-random-secret"
+    existingSecret: ""
+    apiKeySecretKey: "livekit-api-key"
+    apiSecretSecretKey: "livekit-api-secret"
+
+  extraEnv: []
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 2000m
+      memory: 1Gi
+
+  podAnnotations: {}
+  podLabels: {}
+  podSecurityContext: {}
+  securityContext: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}

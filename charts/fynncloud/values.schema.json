@@ -200,6 +200,64 @@
         "existingSecret": { "type": "string" },
         "secretKey": { "type": "string" }
       }
+    },
+    "livekit": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "hostNetwork": { "type": "boolean" },
+        "replicas": { "type": "integer", "minimum": 1 },
+        "logLevel": { "type": "string" },
+        "publicUrl": { "type": "string" },
+        "internalUrl": { "type": "string" },
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": { "type": "string" },
+            "tag": { "type": "string" },
+            "pullPolicy": {
+              "type": "string",
+              "enum": ["Always", "Never", "IfNotPresent"]
+            }
+          }
+        },
+        "service": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "port": { "type": "integer", "minimum": 1, "maximum": 65535 }
+          }
+        },
+        "rtc": {
+          "type": "object",
+          "properties": {
+            "udpPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
+            "tcpPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
+            "useExternalIP": { "type": "boolean" },
+            "nodeIP": { "type": "string" }
+          }
+        },
+        "turn": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "udpPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
+            "domain": { "type": "string" },
+            "tlsPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
+            "tlsSecretName": { "type": "string" }
+          }
+        },
+        "auth": {
+          "type": "object",
+          "properties": {
+            "apiKey": { "type": "string" },
+            "apiSecret": { "type": "string" },
+            "existingSecret": { "type": "string" },
+            "apiKeySecretKey": { "type": "string" },
+            "apiSecretSecretKey": { "type": "string" }
+          }
+        }
+      }
     }
   }
 }

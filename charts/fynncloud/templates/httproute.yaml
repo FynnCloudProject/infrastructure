@@ -38,7 +38,7 @@ spec:
         {{- toYaml .backendRefs | nindent 8 }}
     {{- end }}
     {{- else }}
-    {{- /* ── Auto-generated rules from server/web services ── */}}
+    {{- /* ── Auto-generated rules from server/livekit/web services ── */}}
     {{- if .Values.server.enabled }}
     - matches:
         - path:
@@ -47,6 +47,21 @@ spec:
       backendRefs:
         - name: {{ include "fynncloud.fullname" . }}-server
           port: {{ .Values.server.service.port }}
+    {{- end }}
+    {{- if and .Values.livekit .Values.livekit.enabled (not .Values.livekit.publicUrl) }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /livekit
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: {{ include "fynncloud.fullname" . }}-livekit
+          port: {{ .Values.livekit.service.port }}
     {{- end }}
     {{- if .Values.web.enabled }}
     - matches:

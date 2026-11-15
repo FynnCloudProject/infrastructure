@@ -60,6 +60,24 @@
    Host: {{ .Values.externalPostgresql.host }}:{{ .Values.externalPostgresql.port }}
 {{- end }}
 
+{{- if and .Values.livekit .Values.livekit.enabled }}
+
+🎙️ LiveKit WebRTC SFU & TURN
+   Signaling: {{ include "fynncloud.livekit.publicUrl" . }}
+   Media Ports (open on worker node firewall):
+     - {{ .Values.livekit.rtc.udpPort }}/udp (WebRTC single-port UDP mux)
+     - {{ .Values.livekit.rtc.tcpPort }}/tcp (WebRTC ICE-over-TCP fallback)
+   {{- if .Values.livekit.turn.enabled }}
+     - {{ .Values.livekit.turn.udpPort }}/udp (Embedded TURN/UDP)
+     {{- if and .Values.livekit.turn.domain .Values.livekit.turn.tlsSecretName }}
+     - {{ .Values.livekit.turn.tlsPort }}/tcp (Embedded TURN/TLS for {{ .Values.livekit.turn.domain }})
+     {{- end }}
+   {{- end }}
+{{- end }}
+
 ⚠️  Remember to change default passwords before going to production:
     - server.env.JWT_SECRET
     - server.env.ENCRYPTION_KEY
+{{- if and .Values.livekit .Values.livekit.enabled (not .Values.livekit.auth.existingSecret) }}
+    - livekit.auth.apiSecret
+{{- end }}

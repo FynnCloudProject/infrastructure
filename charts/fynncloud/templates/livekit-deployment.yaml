@@ -1,0 +1,153 @@
+{{- if and .Values.livekit .Values.livekit.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fynncloud.fullname" . }}-livekit
+  labels:
+    {{- include "fynncloud.labels" . | nindent 4 }}
+    app.kubernetes.io/component: livekit
+spec:
+  replicas: {{ .Values.livekit.replicas | default 1 }}
+  strategy:
+    # hostNetwork binds directly to node UDP/TCP ports; Recreate prevents port collisions during rollouts
+    type: {{ .Values.livekit.strategy.type | default "Recreate" }}
+  selector:
+    matchLabels:
+      {{- include "fynncloud.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: livekit
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/livekit-configmap.yaml") . | sha256sum }}
+        {{- with .Values.livekit.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "fynncloud.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: livekit
+        {{- with .Values.livekit.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "fynncloud.serviceAccountName" . }}
+      {{- include "fynncloud.imagePullSecrets" . | nindent 6 }}
+      hostNetwork: {{ .Values.livekit.hostNetwork }}
+      dnsPolicy: {{ if .Values.livekit.hostNetwork }}ClusterFirstWithHostNet{{ else }}ClusterFirst{{ end }}
+      terminationGracePeriodSeconds: {{ .Values.livekit.terminationGracePeriodSeconds | default 300 }}
+      {{- with .Values.livekit.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: livekit
+          image: "{{ .Values.livekit.image.repository }}:{{ .Values.livekit.image.tag }}"
+          imagePullPolicy: {{ .Values.livekit.image.pullPolicy | default "IfNotPresent" }}
+          {{- with .Values.livekit.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          args:
+            - --config
+            - /etc/livekit/livekit.yaml
+          ports:
+            - name: http
+              containerPort: {{ .Values.livekit.service.port | default 7880 }}
+              protocol: TCP
+            - name: rtc-tcp
+              containerPort: {{ .Values.livekit.rtc.tcpPort | default 7881 }}
+              protocol: TCP
+            - name: rtc-udp
+              containerPort: {{ .Values.livekit.rtc.udpPort | default 7882 }}
+              protocol: UDP
+            {{- if .Values.livekit.turn.enabled }}
+            - name: turn-udp
+              containerPort: {{ .Values.livekit.turn.udpPort | default 3478 }}
+              protocol: UDP
+            {{- if and .Values.livekit.turn.domain .Values.livekit.turn.tlsSecretName }}
+            - name: turns-tcp
+              containerPort: {{ .Values.livekit.turn.tlsPort | default 5349 }}
+              protocol: TCP
+            {{- end }}
+            {{- end }}
+          env:
+            - name: LIVEKIT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "fynncloud.livekit.secretName" . }}
+                  key: {{ .Values.livekit.auth.apiKeySecretKey | default "livekit-api-key" }}
+            - name: LIVEKIT_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "fynncloud.livekit.secretName" . }}
+                  key: {{ .Values.livekit.auth.apiSecretSecretKey | default "livekit-api-secret" }}
+            - name: LIVEKIT_KEYS
+              value: "$(LIVEKIT_API_KEY): $(LIVEKIT_API_SECRET)"
+            {{- with .Values.livekit.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 3
+            failureThreshold: 20
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          {{- with .Values.livekit.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/livekit/livekit.yaml
+              subPath: livekit.yaml
+              readOnly: true
+            {{- if and .Values.livekit.turn.enabled .Values.livekit.turn.domain .Values.livekit.turn.tlsSecretName }}
+            - name: turn-tls
+              mountPath: /etc/livekit/tls
+              readOnly: true
+            {{- end }}
+      {{- with .Values.livekit.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.livekit.affinity }}
+      affinity:
+        {{- toYaml .Values.livekit.affinity | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  {{- include "fynncloud.selectorLabels" . | nindent 18 }}
+                  app.kubernetes.io/component: livekit
+              topologyKey: kubernetes.io/hostname
+      {{- end }}
+      {{- with .Values.livekit.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "fynncloud.fullname" . }}-livekit-config
+        {{- if and .Values.livekit.turn.enabled .Values.livekit.turn.domain .Values.livekit.turn.tlsSecretName }}
+        - name: turn-tls
+          secret:
+            secretName: {{ .Values.livekit.turn.tlsSecretName }}
+        {{- end }}
+{{- end }}

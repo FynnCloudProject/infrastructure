@@ -1,0 +1,23 @@
+{{- if and .Values.livekit .Values.livekit.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "fynncloud.fullname" . }}-livekit
+  labels:
+    {{- include "fynncloud.labels" . | nindent 4 }}
+    app.kubernetes.io/component: livekit
+  {{- with .Values.livekit.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.livekit.service.type | default "ClusterIP" }}
+  ports:
+    - port: {{ .Values.livekit.service.port | default 7880 }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "fynncloud.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: livekit
+{{- end }}

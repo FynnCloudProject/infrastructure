@@ -237,12 +237,67 @@ Redis URL
 */}}
 {{- define "fynncloud.redis.url" -}}
 {{- if .Values.redis.enabled }}
-{{- printf "redis://%s-redis.fynncloud.svc.cluster.local:6379" (include "fynncloud.fullname" .) }}
+{{- printf "redis://%s-redis.%s.svc.cluster.local:6379" (include "fynncloud.fullname" .) .Release.Namespace }}
 {{- else if .Values.externalRedis.url }}
 {{- .Values.externalRedis.url }}
 {{- else if .Values.externalRedis.host }}
 {{- printf "redis://%s:%s" (include "fynncloud.redis.host" .) (include "fynncloud.redis.port" .) }}
 {{- else }}
 {{- printf "" }}
+{{- end }}
+{{- end }}
+
+{{/*
+Redis host:port address for LiveKit multi-node coordination
+*/}}
+{{- define "fynncloud.redis.address" -}}
+{{- if .Values.redis.enabled }}
+{{- printf "%s-redis.%s.svc.cluster.local:%v" (include "fynncloud.fullname" .) .Release.Namespace (.Values.redis.service.port | default 6379) }}
+{{- else if .Values.externalRedis.host }}
+{{- printf "%s:%s" (include "fynncloud.redis.host" .) (include "fynncloud.redis.port" .) }}
+{{- else }}
+{{- printf "" }}
+{{- end }}
+{{- end }}
+
+{{/*
+LiveKit Secret name
+*/}}
+{{- define "fynncloud.livekit.secretName" -}}
+{{- if .Values.livekit.auth.existingSecret }}
+{{- .Values.livekit.auth.existingSecret }}
+{{- else }}
+{{- printf "%s-secrets" (include "fynncloud.fullname" .) }}
+{{- end }}
+{{- end }}
+
+{{/*
+LiveKit public WebSocket signaling URL (browser-facing)
+*/}}
+{{- define "fynncloud.livekit.publicUrl" -}}
+{{- if .Values.livekit.publicUrl }}
+{{- .Values.livekit.publicUrl | trimSuffix "/" }}
+{{- else if and .Values.httpRoute.enabled (gt (len .Values.httpRoute.hostnames) 0) }}
+{{- printf "wss://%s/livekit" (index .Values.httpRoute.hostnames 0) }}
+{{- else }}
+{{- $frontend := default .Values.server.env.APP_FRONTEND_URL .Values.server.env.FRONTEND_URL | trimSuffix "/" -}}
+{{- if hasPrefix "https://" $frontend }}
+{{- printf "wss://%s/livekit" (trimPrefix "https://" $frontend) }}
+{{- else if hasPrefix "http://" $frontend }}
+{{- printf "ws://%s/livekit" (trimPrefix "http://" $frontend) }}
+{{- else }}
+{{- printf "wss://%s/livekit" $frontend }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+LiveKit internal Twirp HTTP URL (server-to-SFU)
+*/}}
+{{- define "fynncloud.livekit.internalUrl" -}}
+{{- if .Values.livekit.internalUrl }}
+{{- .Values.livekit.internalUrl | trimSuffix "/" }}
+{{- else }}
+{{- printf "http://%s-livekit.%s.svc.cluster.local:%v" (include "fynncloud.fullname" .) .Release.Namespace (.Values.livekit.service.port | default 7880) }}
 {{- end }}
 {{- end }}

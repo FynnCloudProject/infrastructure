@@ -34,6 +34,18 @@ spec:
     - ports:
         - port: {{ include "fynncloud.postgresql.port" . | int }}
           protocol: TCP
+    {{- if or .Values.redis.enabled .Values.externalRedis.host .Values.externalRedis.url }}
+    # Allow Redis
+    - ports:
+        - port: {{ include "fynncloud.redis.port" . | int }}
+          protocol: TCP
+    {{- end }}
+    {{- if and .Values.livekit .Values.livekit.enabled }}
+    # Allow LiveKit Twirp RoomService API
+    - ports:
+        - port: {{ .Values.livekit.service.port | default 7880 }}
+          protocol: TCP
+    {{- end }}
     {{- with .Values.networkPolicy.extraEgress }}
     {{- toYaml . | nindent 4 }}
     {{- end }}

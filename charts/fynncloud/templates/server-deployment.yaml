@@ -138,6 +138,22 @@ spec:
                   key: {{ .Values.embeddings.secretKey | default "embedding-api-key" }}
             {{- end }}
             {{- end }}
+            {{- if and .Values.livekit .Values.livekit.enabled }}
+            - name: LIVEKIT_URL
+              value: {{ include "fynncloud.livekit.publicUrl" . | quote }}
+            - name: LIVEKIT_INTERNAL_URL
+              value: {{ include "fynncloud.livekit.internalUrl" . | quote }}
+            - name: LIVEKIT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "fynncloud.livekit.secretName" . }}
+                  key: {{ .Values.livekit.auth.apiKeySecretKey | default "livekit-api-key" }}
+            - name: LIVEKIT_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "fynncloud.livekit.secretName" . }}
+                  key: {{ .Values.livekit.auth.apiSecretSecretKey | default "livekit-api-secret" }}
+            {{- end }}
             {{- with .Values.server.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
