@@ -45,8 +45,11 @@ spec:
             type: PathPrefix
             value: /api
       backendRefs:
-        - name: {{ include "fynncloud.fullname" . }}-server
+        - group: ""
+          kind: Service
+          name: {{ include "fynncloud.fullname" . }}-server
           port: {{ .Values.server.service.port }}
+          weight: 1
     {{- end }}
     {{- if and .Values.livekit .Values.livekit.enabled (not .Values.livekit.publicUrl) }}
     - matches:
@@ -60,8 +63,11 @@ spec:
               type: ReplacePrefixMatch
               replacePrefixMatch: /
       backendRefs:
-        - name: {{ include "fynncloud.fullname" . }}-livekit
+        - group: ""
+          kind: Service
+          name: {{ include "fynncloud.fullname" . }}-livekit
           port: {{ .Values.livekit.service.port }}
+          weight: 1
     {{- end }}
     {{- if .Values.web.enabled }}
     - matches:
@@ -69,8 +75,11 @@ spec:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: {{ include "fynncloud.fullname" . }}-web
+        - group: ""
+          kind: Service
+          name: {{ include "fynncloud.fullname" . }}-web
           port: {{ .Values.web.service.port }}
+          weight: 1
     {{- end }}
     {{- end }}
 {{- end }}
