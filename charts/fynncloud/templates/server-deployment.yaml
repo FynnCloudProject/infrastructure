@@ -88,10 +88,16 @@ spec:
             {{- end }}
             - name: STORAGE_PATH
               value: "/app/Storage/"
+            {{- $appName := or .Values.server.env.BRANDING_APP_NAME .Values.server.env.APP_NAME }}
+            {{- if $appName }}
             - name: BRANDING_APP_NAME
-              value: {{ default .Values.server.env.BRANDING_APP_NAME .Values.server.env.APP_NAME | quote }}
+              value: {{ $appName | quote }}
+            {{- end }}
+            {{- $primaryColor := or .Values.server.env.BRANDING_PRIMARY_COLOR .Values.server.env.PRIMARY_COLOR }}
+            {{- if $primaryColor }}
             - name: BRANDING_PRIMARY_COLOR
-              value: {{ default .Values.server.env.BRANDING_PRIMARY_COLOR .Values.server.env.PRIMARY_COLOR | quote }}
+              value: {{ $primaryColor | quote }}
+            {{- end }}
             - name: AUTH_JWT_SECRET
               valueFrom:
                 secretKeyRef:
