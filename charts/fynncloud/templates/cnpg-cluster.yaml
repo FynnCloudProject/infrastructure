@@ -22,6 +22,7 @@ spec:
       owner: {{ .Values.cnpg.bootstrap.initdb.owner }}
       postInitApplicationSQL:
         - CREATE EXTENSION IF NOT EXISTS vector;
+        - ALTER ROLE {{ .Values.cnpg.bootstrap.initdb.owner }} CREATEROLE;
       # We let CNPG generate the password, but we reference a secret definition
       # so we can control it if needed, or stick to the simple default behavior.
       # For now, let's stick to the generated 'app' secret which CNPG manages.
