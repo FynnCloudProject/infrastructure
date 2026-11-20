@@ -48,10 +48,16 @@ spec:
               value: "postgresql://{{ include "fynncloud.postgresql.username" . }}:$(POSTGRES_PASSWORD)@{{ include "fynncloud.postgresql.host" . }}:{{ include "fynncloud.postgresql.port" . }}/{{ include "fynncloud.postgresql.database" . }}?sslmode={{ include "fynncloud.postgresql.sslMode" . }}"
             - name: STORAGE_PATH
               value: "/app/Storage/"
+            {{- $appName := or .Values.server.env.BRANDING_APP_NAME .Values.server.env.APP_NAME }}
+            {{- if $appName }}
             - name: BRANDING_APP_NAME
-              value: {{ default .Values.server.env.BRANDING_APP_NAME .Values.server.env.APP_NAME | quote }}
+              value: {{ $appName | quote }}
+            {{- end }}
+            {{- $primaryColor := or .Values.server.env.BRANDING_PRIMARY_COLOR .Values.server.env.PRIMARY_COLOR }}
+            {{- if $primaryColor }}
             - name: BRANDING_PRIMARY_COLOR
-              value: {{ default .Values.server.env.BRANDING_PRIMARY_COLOR .Values.server.env.PRIMARY_COLOR | quote }}
+              value: {{ $primaryColor | quote }}
+            {{- end }}
             - name: AUTH_JWT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -64,10 +70,10 @@ spec:
                   key: encryption-key
             - name: SERVER_CORS_ALLOWED_ORIGINS
               value: {{ default .Values.server.env.SERVER_CORS_ALLOWED_ORIGINS .Values.server.env.CORS_ALLOWED_ORIGINS | quote }}
-            - name: FRONTEND_URL
-              value: {{ .Values.server.env.FRONTEND_URL | quote }}
-            - name: MAX_CHUNK_SIZE
-              value: "{{ .Values.server.env.MAX_CHUNK_SIZE }}mb"
+            - name: APP_FRONTEND_URL
+              value: {{ default .Values.server.env.APP_FRONTEND_URL .Values.server.env.FRONTEND_URL | quote }}
+            - name: STORAGE_MAX_CHUNK_SIZE
+              value: "{{ default .Values.server.env.STORAGE_MAX_CHUNK_SIZE .Values.server.env.MAX_CHUNK_SIZE }}mb"
             - name: MAX_BODY_SIZE
               value: "{{ default .Values.server.env.MAX_BODY_SIZE .Values.server.env.STORAGE_MAX_BODY_SIZE }}mb"
             {{- with .Values.server.extraEnv }}
